@@ -20,8 +20,8 @@ services:
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
       
       # Spring Boot 등 호스트 앱은 localhost:9092로, 컨테이너끼리는 kafka:29092로 통신
-      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
-      
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${KAFKA_EXTERNAL_HOST:-localhost}:9092
+
       # 브로커 간 내부 통신용 리스너 지정
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
       
