@@ -1,10 +1,8 @@
 package ICN.itrc_project.kafka.consumer;
 
 import ICN.itrc_project.dto.LocationRequest;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.CloseableThreadContext;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.kafka.annotation.KafkaListener;
