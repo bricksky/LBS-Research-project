@@ -1,18 +1,22 @@
+version: '3.8'
+
 services:
   # 1. Zookeeper: Kafka의 메타데이터 관리 및 클러스터 상태 조율
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:7.5.0
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
   # 2. Kafka: 고빈도 위치 이벤트를 수집하고 전달하는 스트리밍 브로커
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.5.0
     depends_on:
       - zookeeper
     ports:
       - "9092:9092" # 외부(Host PC) 접속 포트
     environment:
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       
       # 내부(Docker 컨테이너)와 외부(호스트 PC) 접속 리스너 분리 설정
@@ -31,8 +35,9 @@ services:
   # 3. Redis: 최신 위치 상태를 유지하는 고속 인메모리 DB
   # '서버 사이드 동맥 경화' 방지를 위해 디스크 I/O 없이 초저지연 상태 관리 지원 [cite: 43, 80]
   redis:
-    image: redis:latest
+    image: redis/redis-stack:latest
     ports:
       - "6379:6379"
+      - "8001:8001" # Redis Insight (GUI) 접속 포트
     # 실시간성 극대화를 위해 디스크 스냅샷(저장) 기능 비활성화 [cite: 101]
     command: redis-server --save ""
