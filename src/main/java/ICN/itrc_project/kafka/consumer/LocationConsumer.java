@@ -39,7 +39,7 @@ public class LocationConsumer {
 
         long processingLag = Instant.now().toEpochMilli() - request.getTimestamp();
 
-        log.info("[🧑‍Consumer] 이벤트 처리 완료: userId={}, 지연시간={}ms",
+        log.info("[🧑‍ Consumer] 이벤트 처리 완료: userId={}, 지연시간={}ms",
                 request.getUserId(), processingLag);
     }
 }
