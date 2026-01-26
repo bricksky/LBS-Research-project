@@ -44,9 +44,9 @@ services:
   # 3. Redis: 최신 위치 상태를 유지하는 고속 인메모리 DB
   # '서버 사이드 동맥 경화' 방지를 위해 디스크 I/O 없이 초저지연 상태 관리 지원 [cite: 43, 80]
   redis:
-    image: redis/redis-stack:latest
+    image: redis/redis-stack:7.4.0-v6
     ports:
       - "6379:6379"
-      - "8001:8001" # Redis Insight (GUI) 접속 포트
+      - "127.0.0.1:8001:8001"
     # 실시간성 극대화를 위해 디스크 스냅샷(저장) 기능 비활성화 [cite: 101]
     command: redis-server --save ""

@@ -6,6 +6,9 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       # Value는 JSON 직렬화 도구를 사용 (LocationRequest 객체를 처리하기 위해서)
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # 프로듀서가 헤더에 타입 정보를 실어 보낼지 설정 (기본값 true)
+        spring.json.add.type.headers: true
 
     consumer:
       group-id: lbs-group
@@ -16,3 +19,7 @@ spring:
       properties:
         # 보안을 위해 데이터가 유입될 패키지 경로를 신뢰할 수 있게 허용
         spring.json.trusted.packages: "ICN.itrc_project.dto"
+        # 헤더 정보가 없더라도 기본적으로 LocationRequest로 변환하도록 설정
+        spring.json.value.default.type: "ICN.itrc_project.dto.LocationRequest"
+        # 타입 정보가 헤더에 있을 경우 우선적으로 사용할지 여부
+        spring.json.use.type.headers: true
