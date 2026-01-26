@@ -1,1 +1,6 @@
 rootProject.name = 'itrc-project'
+
+include 'itrc-common'
+include 'itrc-api-kafka'
+include 'itrc-api-rdbms'
+include 'itrc-api-redis-streams'

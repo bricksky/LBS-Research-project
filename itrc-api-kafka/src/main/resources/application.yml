@@ -23,3 +23,9 @@ spring:
         spring.json.value.default.type: "ICN.itrc_project.dto.LocationRequest"
         # 타입 정보가 헤더에 있을 경우 우선적으로 사용할지 여부
         spring.json.use.type.headers: true
+    logging:
+      level:
+        org.apache.kafka: WARN
+        org.springframework.kafka: WARN
+        io.netty: ERROR
+        ICN.itrc_project: INFO
