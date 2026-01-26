@@ -50,7 +50,7 @@ public class LocationConsumer {
         // 2. Redis Geo 저장 (안전하게 검증된 위경도 사용)
         redisTemplate.opsForGeo().add(
                 GEO_KEY,
-                new Point(lat, lon),
+                new Point(lon, lat),
                 request.getUserId()
         );
 

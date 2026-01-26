@@ -19,6 +19,11 @@ public class LocationProducer {
     private static final String TOPIC = "location-events";
 
     public void sendLocation(LocationRequest request) {
+        if (request == null || request.getUserId() == null) {
+            log.warn(">>> [⚠️ Producer] 유효하지 않은 요청 - request 또는 userId가 null");
+            return;
+        }
+
         String readableTime = java.time.LocalTime.now().toString();
 
         kafkaTemplate.send(TOPIC, request.getUserId(), request)
