@@ -24,6 +24,8 @@ public class LocationConsumer {
     private static final String GEO_KEY = "mobility:locations";         // 주변 몇 km 이내 찾을때 묶기 위함
     private static final String STATUS_PREFIX = "mobility:status:";     // 사용자의 상세 정보
 
+    private static final Duration STATUS_TTL = Duration.ofMinutes(30);
+
     @KafkaListener(topics = "location-events", groupId = "lbs-group")
     public void consumeLocation(LocationRequest request) {
 
@@ -32,7 +34,7 @@ public class LocationConsumer {
 
         // 2. Redis 실시간 데이터 저장 (Geo + 상세 상태)
         redisTemplate.opsForGeo().add(GEO_KEY, new Point(request.getLongitude(), request.getLatitude()), request.getUserId());
-        redisTemplate.opsForValue().set(STATUS_PREFIX + request.getUserId(), request);
+        redisTemplate.opsForValue().set(STATUS_PREFIX + request.getUserId(), request, STATUS_TTL);
 
         // 3. 성능 측정을 위한 지연 시간(Lag) 계산
         long eventTime = (request.getTimestamp() != null) ? request.getTimestamp() : System.currentTimeMillis();
@@ -42,7 +44,7 @@ public class LocationConsumer {
         String accuracyPercent = convertToPercentage(request.getAccuracy());
 
         // 5. 프로듀서와 통일된 핵심 로그 출력
-        log.info(">>> [⚙️ 처리] 유저:{} | 정확도:{} | 속도:{}km/h | 상태:{} | 지연:{}ms",
+        log.info(">>> [⚙️ 처리] 유저:{} | 정확도:{} | 속도:{}km/h | 상태:{} | 지연:{}",
                 request.getUserId(),
                 accuracyPercent,
                 request.getSpeed(),
