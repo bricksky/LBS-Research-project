@@ -1,57 +1,36 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.2'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '4.0.2' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
 }
 
-group = 'ICN'
-version = '0.0.1-SNAPSHOT'
-description = 'Demo project for Spring Boot'
+allprojects {
+    group = 'ICN'
+    version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+    repositories {
+        mavenCentral()
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'org.springframework.boot'
+    apply plugin: 'io.spring.dependency-management'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
     }
-}
 
-repositories {
-    mavenCentral()
-}
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    }
 
-dependencies {
-    // 1. Core Framework
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
-
-    // 2. Data & Streaming (핵심 파트)
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-kafka'
-
-    // Kafka JSON 직렬화를 위해 명시적으로 Jackson Databind 추가
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-
-    // 3. Boilerplate (Lombok)
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    // 4. Test (리뷰 반영 수정 부분)
-    // 통합 테스트 지원 (Web, MockMvc 등 포함)
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    // Kafka 임베디드 브로커 지원
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
-    // Redis 테스트를 위한 Testcontainers (실제 인프라와 가장 유사한 환경)
-    testImplementation "org.testcontainers:junit-jupiter"
-    testImplementation "org.testcontainers:redis"
-
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-}
-
-tasks.named('test') {
-    useJUnitPlatform()
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 }
