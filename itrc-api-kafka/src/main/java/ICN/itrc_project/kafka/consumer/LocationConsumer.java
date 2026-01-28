@@ -61,6 +61,9 @@ public class LocationConsumer {
      */
     private String convertToPercentage(Double accuracy) {
         if (accuracy == null) return "0%";
+        if (accuracy < 0) {
+            return "100%";
+        }
         double score;
         if (accuracy <= 5) {
             // 0~5m: 100% ~ 90% (최상급 품질)
@@ -74,7 +77,7 @@ public class LocationConsumer {
         } else {
             score = 0;
         }
-        return String.format("%.0f%%", Math.max(0, score));
+        return String.format("%.0f%%", Math.min(100.0, Math.max(0.0, score)));
     }
 
     /**
@@ -93,7 +96,7 @@ public class LocationConsumer {
      */
     private boolean isInvalid(LocationRequest request) {
         if (request == null || request.getUserId() == null ||
-                request.getLatitude() == null || request.getLongitude() == null) {
+                request.getLatitude() == null || request.getLongitude() == null || request.getTimestamp() == null || request.getSpeed() == null) {
             log.warn(">>> [⚠️ 처리 실패] 데이터 누락");
             return true;
         }

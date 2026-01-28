@@ -58,10 +58,11 @@ public class LocationProducer {
     private String convertToPercentage(Double accuracy) {
         if (accuracy == null) return "0%";
         double score;
+        if (accuracy == null) return "0%";
         if (accuracy <= 5) score = 100 - (accuracy * 2);
         else if (accuracy <= 20) score = 90 - ((accuracy - 5) * 2.67);
         else if (accuracy <= 50) score = 50 - ((accuracy - 20) * 1.67);
         else score = 0;
-        return String.format("%.0f%%", Math.max(0, score));
+        return String.format("%.0f%%", Math.min(100.0, Math.max(0.0, score)));
     }
 }

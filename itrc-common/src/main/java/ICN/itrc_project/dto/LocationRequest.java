@@ -46,22 +46,28 @@ public class LocationRequest {
     /**
      * Grab-Posisi 데이터셋의 원본 로우(Row) 데이터를 우리 DTO 규격으로 변환하는 생성 메서드
      *
-     * @param trjId Grab의 trj_id
-     * @param mode Grab의 driving_mode (car, motorcycle)
-     * @param lat Grab의 rawlat
-     * @param lng Grab의 rawlng
-     * @param bearing Grab의 bearing
-     * @param speedMs Grab의 speed (m/s 단위)
-     * @param acc Grab의 accuracy
+     * @param trjId        Grab의 trj_id
+     * @param mode         Grab의 driving_mode (car, motorcycle)
+     * @param lat          Grab의 rawlat
+     * @param lng          Grab의 rawlng
+     * @param bearing      Grab의 bearing
+     * @param speedMs      Grab의 speed (m/s 단위)
+     * @param acc          Grab의 accuracy
      * @param timestampSec Grab의 pingtimestamp (Unix seconds)
      */
     public static LocationRequest fromGrabDataset(
             String trjId, String mode, double lat, double lng,
             double bearing, double speedMs, double acc, long timestampSec) {
 
+        String serviceType = switch (mode != null ? mode.toLowerCase() : "") {
+            case "car" -> "TAXI";
+            case "motorcycle" -> "BIKE";
+            default -> "UNKNOWN";
+        };
+
         return LocationRequest.builder()
                 .userId(trjId)
-                .serviceType(mode.equalsIgnoreCase("car") ? "TAXI" : "BIKE")
+                .serviceType(serviceType)
                 .latitude(lat)
                 .longitude(lng)
                 .heading(bearing)
