@@ -25,23 +25,24 @@ public class LocationProducer {
             return;
         }
 
-        // 2. 정확도(m)를 신뢰도(%)로 변환
-        String reliability = convertToPercentage(request.getAccuracy());
+        // 2. 정확도(m)와 퍼센티지(%)를 모두 로그에 남김
+        String accuracyPercent = convertToPercentage(request.getAccuracy());
 
         // 3. Kafka 메시지 전송
+        /**
+         * TOPIC: 어디로 보낼 것인가
+         * request.getUserId(): 어떤 파티션으로 보낼 것인가 (메시지 키)
+         * request: 무엇을 보낼 것인가 (메시지 값/페이로드)
+         */
         kafkaTemplate.send(TOPIC, request.getUserId(), request)
-                /**
-                 * TOPIC: 어디로 보낼 것인가
-                 * request.getUserId(): 어떤 파티션으로 보낼 것인가 (메시지 키)
-                 * request: 무엇을 보낼 것인가 (메시지 값/페이로드)
-                 */
                 .whenComplete((result, ex) -> {
                     if (ex == null) {
                         // 4. 전송 성공 로그 (단위 중복 제거 및 형식 통일)
-                        log.info(">>> [🚀 발송] 유저:{} | 서비스:{} | 정확도:{} | 파티션:{}번",
+                        log.info(">>> [🚀 발송] 유저(trj):{} | 서비스:{} | 정확도:{}m({}) | 파티션:{}번",
                                 request.getUserId(),
                                 request.getServiceType(),
-                                reliability,
+                                request.getAccuracy(),
+                                accuracyPercent,
                                 result.getRecordMetadata().partition());
                     } else {
                         // 5. 전송 실패 로그
@@ -56,7 +57,11 @@ public class LocationProducer {
      */
     private String convertToPercentage(Double accuracy) {
         if (accuracy == null) return "0%";
-        double score = Math.max(0, 100 - (accuracy * 5));
-        return String.format("%.0f%%", score);
+        double score;
+        if (accuracy <= 5) score = 100 - (accuracy * 2);
+        else if (accuracy <= 20) score = 90 - ((accuracy - 5) * 2.67);
+        else if (accuracy <= 50) score = 50 - ((accuracy - 20) * 1.67);
+        else score = 0;
+        return String.format("%.0f%%", Math.max(0, score));
     }
 }

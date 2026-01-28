@@ -23,7 +23,6 @@ public class LocationConsumer {
     // Redis 저장 키
     private static final String GEO_KEY = "mobility:locations";         // 주변 몇 km 이내 찾을때 묶기 위함
     private static final String STATUS_PREFIX = "mobility:status:";     // 사용자의 상세 정보
-
     private static final Duration STATUS_TTL = Duration.ofMinutes(30);
 
     @KafkaListener(topics = "location-events", groupId = "lbs-group")
@@ -37,45 +36,56 @@ public class LocationConsumer {
         redisTemplate.opsForValue().set(STATUS_PREFIX + request.getUserId(), request, STATUS_TTL);
 
         // 3. 성능 측정을 위한 지연 시간(Lag) 계산
-        long eventTime = (request.getTimestamp() != null) ? request.getTimestamp() : System.currentTimeMillis();
-        String readableLag = formatDuration(System.currentTimeMillis() - eventTime);
+        long lag = System.currentTimeMillis() - request.getTimestamp();
+        String readableLag = formatDuration(lag);
 
-        // 4. 정확도(m)를 퍼센티지(%)로 변환
+        // 4. 정확도(m)와 퍼센티지(%)를 모두 로그에 남김
         String accuracyPercent = convertToPercentage(request.getAccuracy());
 
         // 5. 프로듀서와 통일된 핵심 로그 출력
-        log.info(">>> [⚙️ 처리] 유저:{} | 정확도:{} | 속도:{}km/h | 상태:{} | 지연:{}",
+        log.info(">>> [⚙️ 처리] 유저(trj):{} | 서비스:{} | 정확도:{}m({}) | 속도:{} | 지연:{}",
                 request.getUserId(),
+                request.getServiceType(),
+                request.getAccuracy(),
                 accuracyPercent,
-                request.getSpeed(),
-                request.getStatus(),
+                String.format("%5.1fkm/h", request.getSpeed()),
                 readableLag);
     }
 
     /**
-     * GPS 정확도(m)를 신뢰도(%)로 변환하는 로직
-     * 공식: $Score = \max(0, 100 - (accuracy \times 5))$
-     * (예: 0m = 100%, 10m = 50%, 20m 이상 = 0%)
+     * * [구간별 설계]
+     * 1. 0~5m (Excellent): 하락폭 최소화 (2점/m). 정지 또는 미세 이동 상태.
+     * 2. 5~20m (Good/Fair): 완만한 하락 (약 2.67점/m). 일반적인 도로 주행 환경.
+     * 3. 20~50m (Poor): 급격한 하락 (약 1.67점/m). 인접 도로와의 혼선 가능성 구간.
+     * 4. 50m 초과 (Invalid): 신뢰 불가 구간. 0% 처리.
      */
     private String convertToPercentage(Double accuracy) {
         if (accuracy == null) return "0%";
-        double score = Math.max(0, 100 - (accuracy * 5));
-        return String.format("%.0f%%", score);
+        double score;
+        if (accuracy <= 5) {
+            // 0~5m: 100% ~ 90% (최상급 품질)
+            score = 100 - (accuracy * 2);
+        } else if (accuracy <= 20) {
+            // 5~20m: 90% ~ 50% (일반 도심 품질)
+            score = 90 - ((accuracy - 5) * 2.67);
+        } else if (accuracy <= 50) {
+            // 20~50m: 50% ~ 0% (신뢰도 낮음)
+            score = 50 - ((accuracy - 20) * 1.67);
+        } else {
+            score = 0;
+        }
+        return String.format("%.0f%%", Math.max(0, score));
     }
 
     /**
-     * 밀리초를 읽기 쉬운 형식으로 변환 (예: 12ms, 1.5s, 2m 30s)
+     * 지연 시간을 가독성 있게 변환
      */
     private String formatDuration(long ms) {
-        if (ms < 1000) {
-            return ms + "ms";
-        }
-        if (ms < 60000) {
-            return String.format("%.2fs", ms / 1000.0);
-        } else {
-            Duration duration = Duration.ofMillis(ms);
-            return duration.toMinutes() + "분" + (duration.toSeconds() % 60) + "초";
-        }
+        if (ms < 0) return "0ms";
+        if (ms < 1000) return ms + "ms";
+        if (ms < 60000) return String.format("%.2fs", ms / 1000.0);
+        Duration duration = Duration.ofMillis(ms);
+        return duration.toMinutes() + "분" + (duration.toSeconds() % 60) + "초";
     }
 
     /**
