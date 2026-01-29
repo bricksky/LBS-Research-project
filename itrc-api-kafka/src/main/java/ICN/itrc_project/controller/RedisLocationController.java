@@ -1,9 +1,7 @@
 package ICN.itrc_project.controller;
 
 import ICN.itrc_project.dto.LocationResponse;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.*;
@@ -15,6 +13,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.awt.geom.Path2D;
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,14 +35,17 @@ public class RedisLocationController {
      */
     @GetMapping("/range")
     public ResponseEntity<List<LocationResponse>> searchByRange(
-            @RequestParam @Min(-90) @Max(90) double lat,
-            @RequestParam @Min(-180) @Max(180) double lng,
-            @RequestParam @Positive double radiusMeter
+            @RequestParam @DecimalMin("-90.0") @DecimalMax("90.0") BigDecimal lat,
+            @RequestParam @DecimalMin("-180.0") @DecimalMax("180.0") BigDecimal lng,
+            @RequestParam @DecimalMin(value = "0.0", inclusive = false) BigDecimal radiusMeter
     ) {
         long startTime = System.currentTimeMillis();
-        log.info(">>> [🔎 공간 검색] 반경 내 검색 실행 | 위도: {}, 경도: {}) | 반경: {}m", lat, lng, (int) radiusMeter);
+        double dLat = lat.doubleValue();
+        double dLng = lng.doubleValue();
+        double dRadius = radiusMeter.doubleValue();
+        log.info(">>> [🔎 공간 검색] 반경 내 검색 실행 | 위도: {}, 경도: {}) | 반경: {}m", dLat, dLng, (int) dRadius);
 
-        Circle circle = new Circle(new Point(lng, lat), new Distance(radiusMeter, Metrics.METERS));
+        Circle circle = new Circle(new Point(dLng, dLat), new Distance(dRadius, Metrics.METERS));
         RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()
                 .includeDistance().includeCoordinates().sortAscending();
 
@@ -76,14 +78,16 @@ public class RedisLocationController {
      */
     @GetMapping("/knn")
     public ResponseEntity<List<LocationResponse>> searchByKnn(
-            @RequestParam @Min(-90) @Max(90) double lat,
-            @RequestParam @Min(-180) @Max(180) double lng,
+            @RequestParam @DecimalMin("-90.0") @DecimalMax("90.0") BigDecimal lat,
+            @RequestParam @DecimalMin("-180.0") @DecimalMax("180.0") BigDecimal lng,
             @RequestParam @Positive int n
     ) {
         long startTime = System.currentTimeMillis();
+        double dLat = lat.doubleValue();
+        double dLng = lng.doubleValue();
         log.info(">>> [🔎 공간 검색] 최근접 N명 탐색 실행 | 위도: {}, 경도: {} | 목표: 상위 {}명", lat, lng, n);
 
-        Circle circle = new Circle(new Point(lng, lat), new Distance(5000, Metrics.METERS));
+        Circle circle = new Circle(new Point(dLng, dLat), new Distance(5000, Metrics.METERS));
         RedisGeoCommands.GeoRadiusCommandArgs args = RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs()
                 .includeDistance().includeCoordinates().sortAscending().limit(n);
 
