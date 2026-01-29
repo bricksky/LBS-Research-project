@@ -43,7 +43,7 @@ public class LocationConsumer {
         String accuracyPercent = convertToPercentage(request.getAccuracy());
 
         // 5. 프로듀서와 통일된 핵심 로그 출력
-        log.info(">>> [⚙️ 처리] 유저(trj):{} | 서비스:{} | 정확도:{}m({}) | 속도:{} | 지연:{}",
+        log.info(">>> [⚙️ 처리] 유저(trj):{} | 서비스:{} | 정확도:{}m({}) | 속도:{} | 지연:{} \n",
                 request.getUserId(),
                 request.getServiceType(),
                 request.getAccuracy(),
