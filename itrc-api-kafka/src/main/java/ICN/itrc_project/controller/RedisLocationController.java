@@ -130,6 +130,14 @@ public class RedisLocationController {
             return ResponseEntity.badRequest().build();
         }
 
+        boolean isInvalidLat = lats.stream().anyMatch(lat -> lat < -90 || lat > 90);
+        boolean isInvalidLng = lngs.stream().anyMatch(lng -> lng < -180 || lng > 180);
+
+        if (isInvalidLat || isInvalidLng) {
+            log.error(">>> [❌ 요청 오류] 위도(-90~90) 또는 경도(-180~180) 범위를 벗어난 좌표가 포함되어 있습니다.");
+            return ResponseEntity.badRequest().build();
+        }
+
         // 1. 다각형의 바운딩 박스(MBR) 중심 및 대각선 거리 계산
         double minLat = lats.stream().min(Double::compareTo).orElse(0.0);
         double maxLat = lats.stream().max(Double::compareTo).orElse(0.0);

@@ -25,10 +25,15 @@ public class KafkaLocationController {
 
     @PostMapping
     public ResponseEntity<String> streamLocation(@Valid @RequestBody LocationRequest request) {
-        log.info(">>> [💌 수신] 유저(trj):{}", request.getUserId());
+        log.info(">>> [💌 위치 정보 수신] 유저(trj):{}", request.getUserId());
 
-        // Kafka로 비동기 전송
+        /**
+         *   Kafka로 비동기 전송
+         *   1. 수신된 위치 데이터를 Kafka로 전달
+         */
         locationProducer.sendLocation(request);
+
+        // 2. 비동기 처리를 위해 즉시 성공 응답 반환
         return ResponseEntity.accepted().body("위치 정보가 Kafka로 전달되었습니다.");
     }
 }

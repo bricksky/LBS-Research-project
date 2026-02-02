@@ -38,7 +38,7 @@ services:
 
     # [헬스체크 추가] 카프카가 실제로 준비될 때까지 스프링의 접근을 제어
     healthcheck:
-      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:29092", "--list"]
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server", "localhost:29092", "--list" ]
       interval: 10s
       timeout: 10s
       retries: 5
