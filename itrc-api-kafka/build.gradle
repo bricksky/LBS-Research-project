@@ -1,0 +1,12 @@
+dependencies {
+    implementation project(':itrc-common') // 공통 모듈 연결
+
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+
+    // 테스트 환경 (에러 방지를 위해 버전 명시)
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
+    testImplementation 'org.testcontainers:redis:1.19.3'
+}
