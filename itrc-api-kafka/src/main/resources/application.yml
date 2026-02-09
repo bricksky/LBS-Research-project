@@ -15,7 +15,6 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       # 받을 때도 JSON을 객체로 변환하도록 설정
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         # 보안을 위해 데이터가 유입될 패키지 경로를 신뢰할 수 있게 허용
         spring.json.trusted.packages: "ICN.itrc_project.dto"
