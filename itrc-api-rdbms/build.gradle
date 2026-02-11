@@ -6,4 +6,8 @@ dependencies {
 
     implementation 'org.postgresql:postgresql'
     implementation 'org.hibernate.orm:hibernate-spatial'
+
+    // [모니터링 추가]
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }

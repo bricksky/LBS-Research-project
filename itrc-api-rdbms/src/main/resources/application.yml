@@ -23,5 +23,17 @@ spring:
 logging:
   level:
     ICN.itrc_project: INFO
-    org.hibernate.SQL: DEBUG
+    org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

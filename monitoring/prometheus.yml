@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 2s # 2초마다 수집 (실시간성 강조를 위해 짧게 설정)
+
+scrape_configs:
+  - job_name: 'itrc-monitoring'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      # host.docker.internal: 도커 컨테이너가 내 맥북(Localhost)을 찾을 때 쓰는 주소
+      - targets: ['host.docker.internal:8081', 'host.docker.internal:8082']
+        labels:
+          application: 'ItrcProject'

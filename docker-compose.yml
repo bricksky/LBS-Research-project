@@ -48,7 +48,7 @@ services:
       - redis_data:/data
 
   # ==========================================
-  # 3. PostGIS (ARM64 Native) [핵심 변경]
+  # 3. PostGIS (ARM64 Native)
   # ==========================================
   postgis:
     image: kartoza/postgis:16-3.4
@@ -64,6 +64,38 @@ services:
       - postgres_data:/var/lib/postgresql/data
     restart: always
 
+  # ==========================================
+  # 4. Monitoring (Prometheus & Grafana) [NEW]
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: itrc-project-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      # 아까 만든 설정 파일을 컨테이너 내부로 연결
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      # 도커 내부에서 로컬호스트(Spring Boot)를 찾기 위한 설정
+      - "host.docker.internal:host-gateway"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: itrc-project-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password # 접속 비밀번호
+    volumes:
+      - grafana_data:/var/lib/grafana # 대시보드 저장용 볼륨
+    depends_on:
+      - prometheus
+    restart: always
+
 volumes:
   redis_data:
   postgres_data:
+  grafana_data: # 그라파나 설정 저장용

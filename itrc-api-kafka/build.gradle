@@ -9,4 +9,8 @@ dependencies {
     testImplementation 'org.springframework.kafka:spring-kafka-test'
     testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
     testImplementation 'org.testcontainers:redis:1.19.3'
+
+    // [모니터링 추가]
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }
