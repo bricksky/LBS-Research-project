@@ -1,63 +1,69 @@
 version: '3.8'
 
 services:
-  # 1. Zookeeper: Kafka의 메타데이터 관리 및 클러스터 상태 조율
+  # ==========================================
+  # 1. Kafka & Zookeeper (itrc-api-kafka 모듈용)
+  # ==========================================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: itrc-project-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    healthcheck:
-      test: [ "CMD", "nc", "-z", "localhost", "2181" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    restart: always
 
-  # 2. Kafka: 고빈도 위치 이벤트를 수집하고 전달하는 스트리밍 브로커
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: itrc-project-kafka
     depends_on:
       zookeeper:
-        condition: service_healthy
+        condition: service_started
     ports:
-      - "9092:9092" # 외부(Spring Boot, Data Feeder) 접속용 포트
+      - "9092:9092"
     restart: always
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-
-      # [핵심 수정] 리스너 분리: INTERNAL은 브로커 간 통신, EXTERNAL은 외부(localhost) 통신
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
       KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
       KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
       KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
-
-      # 싱글 브로커 환경을 위한 필수 안정성 설정
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
-    # [헬스체크 개선] 포트 충돌을 피하기 위해 nc(netcat)를 사용하여 9092 포트 가용성 확인
-    healthcheck:
-      test: [ "CMD-SHELL", "nc -z localhost 9092 || exit 1" ]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-      start_period: 20s
-
-  # 3. Redis Stack: 최신 위치 상태 유지 및 GUI(RedisInsight) 제공
+  # ==========================================
+  # 2. Redis Stack (itrc-api-redis-streams 모듈용)
+  # ==========================================
   redis:
     image: redis/redis-stack:latest
     container_name: itrc-project-redis
     ports:
-      - "6379:6379"      # Redis 데이터 포트
-      - "8001:8001"      # RedisInsight GUI 포트 (localhost:8001 접속)
+      - "6379:6379"
+      - "8001:8001"
     environment:
-      - REDIS_ARGS=--save 60 1 # 60초마다 최소 1개의 변경이 있으면 저장 (영속성)
+      - REDIS_ARGS=--save 60 1
     volumes:
-      - redis_data:/data # 데이터 영속성 유지
+      - redis_data:/data
+
+  # ==========================================
+  # 3. PostGIS (ARM64 Native) [핵심 변경]
+  # ==========================================
+  postgis:
+    image: kartoza/postgis:16-3.4
+    container_name: itrc-project-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: itrcdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      ALLOW_IP_RANGE: "0.0.0.0/0"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
 volumes:
   redis_data:
+  postgres_data:

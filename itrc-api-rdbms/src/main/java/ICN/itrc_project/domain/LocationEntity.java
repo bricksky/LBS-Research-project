@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 import java.time.LocalDateTime;
 
@@ -12,10 +13,12 @@ import java.time.LocalDateTime;
 @Getter
 @Table(name = "location_data", indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
-        @Index(name = "idx_lat_lng", columnList = "latitude, longitude")
+        @Index(name = "idx_location", columnList = "location")
 })
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LocationEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,8 +26,9 @@ public class LocationEntity {
     @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
-    private Double latitude;
-    private Double longitude;
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point location;
+
     private Double speed;
     private Double accuracy;
     private String serviceType;
@@ -33,21 +37,18 @@ public class LocationEntity {
     private LocalDateTime updatedAt;
 
     @Builder
-    public LocationEntity(Long id, String userId, Double latitude, Double longitude, Double speed, Double accuracy, String serviceType, Long timestamp, LocalDateTime updatedAt) {
-        this.id = id;
+    public LocationEntity(String userId, Point location, Double speed, Double accuracy, String serviceType, Long timestamp) {
         this.userId = userId;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.location = location;
         this.speed = speed;
         this.accuracy = accuracy;
         this.serviceType = serviceType;
         this.timestamp = timestamp;
-        this.updatedAt = updatedAt;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateLocation(Double latitude, Double longitude, Double speed, Double accuracy, Long timestamp) {
-        this.latitude = latitude;
-        this.longitude = longitude;
+    public void updateLocation(Point location, Double speed, Double accuracy, Long timestamp) {
+        this.location = location;
         this.speed = speed;
         this.accuracy = accuracy;
         this.timestamp = timestamp;

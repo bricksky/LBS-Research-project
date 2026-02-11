@@ -6,25 +6,38 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface LocationRepository extends JpaRepository<LocationEntity, Long> {
-    Optional<LocationEntity> findByUserId(String userId);
 
-    /**
-     * RDBMS 공간 검색 쿼리
-     */
+    // 1️⃣ Range Query (반경 검색)
+    // 특정 지점(lng, lat) 반경 radius 미터(m) 내의 데이터 검색
     @Query(value = """
-            SELECT *, 
-                (6371000 * acos(cos(radians(:lat)) * cos(radians(latitude)) * cos(radians(longitude) - radians(:lng)) + sin(radians(:lat)) * sin(radians(latitude)))) 
-                AS distance
-            FROM location_data
-            HAVING distance <= :radius
-            ORDER BY distance ASC
+            SELECT * FROM location_data
+            WHERE ST_DWithin(
+                location::geography, 
+                ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, 
+                :radius
+            )
             """, nativeQuery = true)
-    List<LocationEntity> findNearbyUsers(
-            @Param("lat") double latitude,
-            @Param("lng") double longitude,
-            @Param("radius") double radiusMeter
-    );
+    List<LocationEntity> findByRadius(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radiusMeter);
+
+    // 2️⃣ KNN (K-Nearest Neighbors, 최근접 이웃)
+    @Query(value = """
+            SELECT * FROM location_data
+            ORDER BY location::geography <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+              LIMIT :k
+            """, nativeQuery = true)
+    List<LocationEntity> findNearest(@Param("lat") double lat, @Param("lng") double lng, @Param("k") int k);
+
+    // 3️⃣ PIP (Point In Polygon, 구역 필터링)
+    @Query(value = """
+            SELECT * FROM location_data
+            WHERE ST_Contains(
+                ST_GeomFromText(:polygonWkt, 4326), 
+                location
+            )
+            """, nativeQuery = true)
+    List<LocationEntity> findInPolygon(@Param("polygonWkt") String polygonWkt);
+
+    LocationEntity findByUserId(String userId);
 }
