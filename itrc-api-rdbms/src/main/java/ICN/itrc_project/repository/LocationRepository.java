@@ -24,8 +24,8 @@ public interface LocationRepository extends JpaRepository<LocationEntity, Long> 
     // 2️⃣ KNN (K-Nearest Neighbors, 최근접 이웃)
     @Query(value = """
             SELECT * FROM location_data
-            ORDER BY location <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)
-            LIMIT :k
+            ORDER BY location::geography <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+              LIMIT :k
             """, nativeQuery = true)
     List<LocationEntity> findNearest(@Param("lat") double lat, @Param("lng") double lng, @Param("k") int k);
 

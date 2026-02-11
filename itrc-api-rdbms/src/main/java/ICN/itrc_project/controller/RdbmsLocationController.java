@@ -4,6 +4,7 @@ import ICN.itrc_project.domain.LocationEntity;
 import ICN.itrc_project.dto.LocationRequest;
 import ICN.itrc_project.dto.RdbmsLocationResponse;
 import ICN.itrc_project.repository.LocationRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -28,7 +29,7 @@ public class RdbmsLocationController {
     // ✅ 데이터 저장/업데이트
     @PostMapping("/update")
     @Transactional
-    public ResponseEntity<String> updateLocation(@RequestBody LocationRequest request) {
+    public ResponseEntity<String> updateLocation(@Valid @RequestBody LocationRequest request) {
         // 입력받은 위경도로 Point 객체 생성 (순서: 경도 X, 위도 Y)
         Point point = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
 
