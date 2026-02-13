@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+dependencies {
+    implementation project(':itrc-common')
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // Web & Utility
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.uber:h3:4.1.1'
+
+    // [모니터링] Grafana/Prometheus 연동
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
+    // Lombok & Test
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+bootJar {
+    enabled = true
+    mainClass = 'ICN.itrc_project.lbsproducer.LbsProducerApplication'
+}
+
+jar {
+    enabled = false
+}

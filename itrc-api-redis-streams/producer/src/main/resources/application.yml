@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: LBS-Producer
+  threads:
+    virtual:
+      enabled: true
+  # 참고: 기존 친구분의 사용자 정의 redis 설정을 유지합니다.
+  # 단, Spring Boot의 표준 Redis 메트릭을 수집하려면 나중에 spring.data.redis로 통합을 고려해 보세요.
+
+server:
+  port: 8080
+
+redis:
+  host: localhost
+  port: 6379
+
+lbs:
+  stream:
+    name: lbs_stream
+    group: lbs_group
+
+# [모니터링 추가]
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health, info, metrics
+  metrics:
+    tags:
+      application: ${spring.application.name}

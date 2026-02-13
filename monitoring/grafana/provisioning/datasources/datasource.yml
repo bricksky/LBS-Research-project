@@ -1,0 +1,11 @@
+# 그라파나가 켜지자마자 Prometheus와 자동으로 악수하게 만드는 설정
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090  # 도커 컨테이너 이름으로 접속
+    isDefault: true              # 기본 데이터 소스로 설정
+    editable: true

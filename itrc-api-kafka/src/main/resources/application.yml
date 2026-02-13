@@ -1,0 +1,54 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: itrc-api-kafka
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      # Key는 기존처럼 문자열(userId)로 처리
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # Value는 JSON 직렬화 도구를 사용 (LocationRequest 객체를 처리하기 위해서)
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        # 프로듀서가 헤더에 타입 정보를 실어 보낼지 설정 (기본값 true)
+        spring.json.add.type.headers: true
+
+    consumer:
+      group-id: lbs-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      # 받을 때도 JSON을 객체로 변환하도록 설정
+      properties:
+        # 보안을 위해 데이터가 유입될 패키지 경로를 신뢰할 수 있게 허용
+        spring.json.trusted.packages: "ICN.itrc_project.dto"
+        # 헤더 정보가 없더라도 기본적으로 LocationRequest로 변환하도록 설정
+        spring.json.value.default.type: "ICN.itrc_project.dto.LocationRequest"
+        # 타입 정보가 헤더에 있을 경우 우선적으로 사용할지 여부
+        spring.json.use.type.headers: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+logging:
+  level:
+    org.apache.kafka: WARN
+    org.springframework.kafka: WARN
+    io.netty: ERROR
+    ICN.itrc_project: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true

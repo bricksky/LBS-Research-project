@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. Kafka Ecosystem
+  # ==========================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: itrc-project-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    restart: always
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: itrc-project-kafka
+    depends_on:
+      zookeeper:
+        condition: service_started
+    ports:
+      - "9092:9092"
+    restart: always
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+  # ==========================================
+  # 2. Redis Stack
+  # ==========================================
+  redis:
+    image: redis/redis-stack:latest
+    container_name: itrc-project-redis
+    ports:
+      - "6379:6379"
+      - "8001:8001"
+    environment:
+      - REDIS_ARGS=--save 60 1
+    volumes:
+      - redis_data:/data
+
+  # ==========================================
+  # 3. PostGIS
+  # ==========================================
+  postgis:
+    image: kartoza/postgis:16-3.4
+    container_name: itrc-project-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: itrcdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      ALLOW_IP_RANGE: "0.0.0.0/0"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  # ==========================================
+  # 4. Monitoring (Prometheus & Grafana)
+  # ==========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: itrc-project-prometheus
+    user: "root"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-remote-write-receiver'
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: itrc-project-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password
+    volumes:
+      # 1. [데이터 저장] 사용자가 UI에서 만든 대시보드 저장용
+      - grafana_data:/var/lib/grafana
+
+      # 2. [설정 연동] 여기가 수정됨! (뒤에 /provisioning 까지 꼭 붙여야 함)
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+
+      # 3. [JSON 파일 연동] 로컬 JSON 파일을 컨테이너 내부로 복사
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    restart: always
+
+# ==========================================
+# Volumes
+# ==========================================
+volumes:
+  redis_data:
+  postgres_data:
+  grafana_data:
+  prometheus_data:

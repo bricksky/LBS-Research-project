@@ -1,0 +1,10 @@
+rootProject.name = 'itrc-project'
+
+// 공통 및 기존 모듈
+include 'itrc-common'
+include 'itrc-api-kafka'
+include 'itrc-api-rdbms'
+
+// Redis Streams 하위 모듈 (계층형 등록)
+include 'itrc-api-redis-streams:consumer'
+include 'itrc-api-redis-streams:producer'
