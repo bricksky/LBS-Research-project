@@ -4,6 +4,8 @@ import ICN.itrc_project.domain.LocationEntity;
 import ICN.itrc_project.dto.LocationRequest;
 import ICN.itrc_project.dto.RdbmsLocationResponse;
 import ICN.itrc_project.repository.LocationRepository;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,27 +27,52 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RdbmsLocationController {
     private final LocationRepository locationRepository;
+    private final MeterRegistry meterRegistry;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // 0️⃣ 데이터 저장/업데이트
     @PostMapping("/update")
     @Transactional
     public ResponseEntity<String> updateLocation(@Valid @RequestBody LocationRequest request) {
+        long startTime = System.currentTimeMillis(); // 처리 시작 시간
+
+        // 1. DB 로직 수행
         Point point = geometryFactory.createPoint(new Coordinate(request.getLongitude(), request.getLatitude()));
 
         LocationEntity entity = locationRepository.findByUserId(request.getUserId());
+
         if (entity == null) {
-            locationRepository.save(LocationEntity.builder()
+            // 신규 생성
+            LocationEntity newEntity = LocationEntity.builder()
                     .userId(request.getUserId())
                     .location(point)
                     .speed(request.getSpeed())
                     .accuracy(request.getAccuracy())
                     .serviceType(request.getServiceType())
                     .timestamp(request.getTimestamp())
-                    .build());
+                    .build();
+            locationRepository.save(newEntity);
         } else {
+            // 기존 업데이트 (Dirty Checking)
             entity.updateLocation(point, request.getSpeed(), request.getAccuracy(), request.getTimestamp());
         }
+
+        // 2. ✅ 데이터 신선도(Freshness Lag) 기록 (핵심 코드)
+        // k6에서 보낸 timestamp가 존재해야 함
+        if (request.getTimestamp() > 0) {
+            long now = System.currentTimeMillis();
+            long lag = now - request.getTimestamp(); // (현재 서버 시간 - 데이터 생성 시간)
+
+            Timer.builder("location.event.freshness")
+                    .description("Time from event creation to DB save")
+                    .tags("application", "itrc-api-rdbms") // application.yml과 일치
+                    .register(meterRegistry)
+                    .record(lag, TimeUnit.MILLISECONDS);
+
+            // (선택) 로그 레벨이 DEBUG일 때만 출력하여 성능 저하 방지
+            log.debug("User: {}, Lag: {}ms", request.getUserId(), lag);
+        }
+
         return ResponseEntity.ok("Saved (PostGIS)");
     }
 

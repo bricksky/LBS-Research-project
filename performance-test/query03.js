@@ -23,39 +23,49 @@ export const options = {
 export default function () {
     const record = data[Math.floor(Math.random() * data.length)];
     const params = {headers: {'Content-Type': 'application/json'}};
-    const BASE_URL = 'http://localhost:8081/api/v1/search'; // RediSearch 기준
+    const BASE_URL = 'http://localhost:8081/api/v1/search';
 
     const rand = Math.random();
+    const lat = parseFloat(record.rawlat);
+    const lng = parseFloat(record.rawlng);
 
-    // 공통으로 사용할 기본 객체 생성 함수 (NPE 방지용)
-    const createBasePayload = (trj_id, lat, lng) => JSON.stringify({
-        trj_id: trj_id,
-        rawlat: parseFloat(lat),
-        rawlng: parseFloat(lng),
-        pingtimestamp: Date.now(),
+    // 🌟 1. Record 구조(trj_id, rawlat 등)에 100% 맞춘 페이로드 생성 함수
+    const createPayload = (trjId, lat, lng) => JSON.stringify({
+        trj_id: trjId,
         driving_mode: "searching",
-        osname: "test-client",
+        osname: "k6-test",
+        pingtimestamp: Date.now(),
+        rawlat: lat,
+        rawlng: lng,
         speed: 0.0,
         bearing: 0,
         accuracy: 0.0
     });
 
-    if (rand < 0.33) { // [1. Point Query] 특정 기사 현재 위치 조회
-        const userIdx = Math.floor(Math.random() * 100000);
-        const payload = createBasePayload(`user_${userIdx}`, 0.0, 0.0);
-        const res = http.post(`${BASE_URL}/point`, payload, params);
-        check(res, {'Point OK': (r) => r.status === 200});
+    if (rand < 0.33) {
+        // [1. PIP Search]
+        // 서버의 PipRequest가 별도로 위경도 리스트를 받는 구조라면 아래 유지
+        // 만약 PIP도 LocationRequest를 받는다면 createPayload 사용
+        const pipPayload = JSON.stringify({
+            lats: [lat, lat + 0.01, lat + 0.01, lat],
+            lngs: [lng, lng, lng + 0.01, lng + 0.01]
+        });
+        const res = http.post(`${BASE_URL}/pip`, pipPayload, params);
+        check(res, {'PIP OK': (r) => r.status === 200});
 
-    } else if (rand < 0.66) { // [2. Range Search] 주변 범위 검색
+    } else if (rand < 0.66) {
+        // [2. Range Search]
         const radius = (Math.random() * 4 + 1).toFixed(1);
-        const payload = createBasePayload(null, record.rawlat, record.rawlng);
+        const payload = createPayload("search_user", lat, lng);
         const res = http.post(`${BASE_URL}/range?radius=${radius}`, payload, params);
         check(res, {'Range OK': (r) => r.status === 200});
 
-    } else { // [3. KNN Search] 가장 가까운 기사 N명 검색
+    } else {
+        // [3. KNN Search]
         const k = Math.floor(Math.random() * 41) + 10;
-        const payload = createBasePayload(null, record.rawlat, record.rawlng);
-        const res = http.post(`${BASE_URL}/knn?n=${k}`, payload, params);
+        const payload = createPayload("search_user", lat, lng);
+        // 컨트롤러의 @RequestParam 이름이 'k'인지 'n'인지 확인 후 맞춰주세요.
+        const res = http.post(`${BASE_URL}/knn?k=${k}`, payload, params);
         check(res, {'KNN OK': (r) => r.status === 200});
     }
 

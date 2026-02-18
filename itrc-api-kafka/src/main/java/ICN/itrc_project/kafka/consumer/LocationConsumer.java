@@ -1,6 +1,7 @@
 package ICN.itrc_project.kafka.consumer;
 
 import ICN.itrc_project.dto.LocationRequest;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Point;
@@ -21,6 +22,7 @@ public class LocationConsumer {
 
     private final RedisTemplate<String, Object> redisTemplate;  // JSON용 (상세정보)
     private final StringRedisTemplate stringRedisTemplate;      // String용 (지도좌표)
+    private final MeterRegistry meterRegistry;
 
     // Redis 저장 키
     private static final String GEO_KEY = "mobility:locations";         // 주변 몇 km 이내 찾을때 묶기 위함
@@ -48,6 +50,15 @@ public class LocationConsumer {
         long lag = System.currentTimeMillis() - request.getTimestamp();
         String readableLag = formatDuration(lag);
 
+        if (lag >= 0) {
+            io.micrometer.core.instrument.Timer.builder("location.event.freshness")
+                    .description("Time from Producer to Consumer Redis Update")
+                    // ⚠️ 주의: "itrc-api-kafka" 부분은 application.yml의 앱 이름과 일치해야 합니다!
+                    .tags("application", "itrc-api-kafka")
+                    .register(meterRegistry)
+                    .record(lag, java.util.concurrent.TimeUnit.MILLISECONDS);
+        }
+
         // 4. 정확도(m)와 퍼센티지(%)를 모두 로그에 남김
         String convertToPercentage = convertToPercentage(request.getAccuracy());
 
@@ -59,6 +70,8 @@ public class LocationConsumer {
                 convertToPercentage,
                 String.format("%5.1fkm/h", request.getSpeed()),
                 readableLag);
+
+
     }
 
     /**
