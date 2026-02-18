@@ -57,20 +57,24 @@ public class RdbmsLocationController {
             entity.updateLocation(point, request.getSpeed(), request.getAccuracy(), request.getTimestamp());
         }
 
-        // 2. ✅ 데이터 신선도(Freshness Lag) 기록 (핵심 코드)
+        // 2. ✅ 데이터 신선도(Freshness Lag) 기록
         // k6에서 보낸 timestamp가 존재해야 함
         if (request.getTimestamp() > 0) {
             long now = System.currentTimeMillis();
-            long lag = now - request.getTimestamp(); // (현재 서버 시간 - 데이터 생성 시간)
+            long lagMs = now - request.getTimestamp(); // 밀리초 단위 차이 계산
 
+            // 1. Timer를 사용하여 기록 (Prometheus 관례에 따라 초 단위로 자동 변환됨)
             Timer.builder("location.event.freshness")
-                    .description("Time from event creation to DB save")
-                    .tags("application", "itrc-api-rdbms") // application.yml과 일치
+                    .description("데이터 생성 시점부터 DB 저장 완료까지의 지연 시간")
+                    .tags("application", "itrc-api-rdbms")
+                    .publishPercentileHistogram()
                     .register(meterRegistry)
-                    .record(lag, TimeUnit.MILLISECONDS);
+                    .record(lagMs, TimeUnit.MILLISECONDS);
 
-            // (선택) 로그 레벨이 DEBUG일 때만 출력하여 성능 저하 방지
-            log.debug("User: {}, Lag: {}ms", request.getUserId(), lag);
+            // 2. 로그 출력 (초 단위로 변환하여 출력하면 분석이 더 쉽습니다)
+            if (log.isDebugEnabled()) {
+                log.debug("사용자: {}, 데이터 신선도 지연(Lag): {}s", request.getUserId(), lagMs / 1000.0);
+            }
         }
 
         return ResponseEntity.ok("Saved (PostGIS)");

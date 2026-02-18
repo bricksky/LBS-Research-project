@@ -6,7 +6,7 @@ services:
   # ==========================================
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
-    container_name: itrc-project-zookeeper
+    container_name: lbs-research-zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -14,7 +14,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: itrc-project-kafka
+    container_name: lbs-research-kafka
     depends_on:
       zookeeper:
         condition: service_started
@@ -38,7 +38,7 @@ services:
   # ==========================================
   redis:
     image: redis/redis-stack:latest
-    container_name: itrc-project-redis
+    container_name: lbs-research-redis
     ports:
       - "6379:6379"
       - "8001:8001"
@@ -52,7 +52,7 @@ services:
   # ==========================================
   postgis:
     image: kartoza/postgis:16-3.4
-    container_name: itrc-project-db
+    container_name: lbs-research-db
     ports:
       - "5432:5432"
     environment:
@@ -69,7 +69,7 @@ services:
   # ==========================================
   prometheus:
     image: prom/prometheus:latest
-    container_name: itrc-project-prometheus
+    container_name: lbs-research-prometheus
     user: "root"
     ports:
       - "9090:9090"
@@ -86,27 +86,19 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: itrc-project-grafana
+    container_name: lbs-research-grafana
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=password
     volumes:
-      # 1. [데이터 저장] 사용자가 UI에서 만든 대시보드 저장용
       - grafana_data:/var/lib/grafana
-
-      # 2. [설정 연동] 여기가 수정됨! (뒤에 /provisioning 까지 꼭 붙여야 함)
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-
-      # 3. [JSON 파일 연동] 로컬 JSON 파일을 컨테이너 내부로 복사
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
     depends_on:
       - prometheus
     restart: always
 
-# ==========================================
-# Volumes
-# ==========================================
 volumes:
   redis_data:
   postgres_data:

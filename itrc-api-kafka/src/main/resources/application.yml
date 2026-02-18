@@ -52,3 +52,6 @@ management:
     distribution:
       percentiles-histogram:
         http.server.requests: true
+        location.event.freshness: true
+      sla:
+        location.event.freshness: 100ms, 500ms, 1s, 2s

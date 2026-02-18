@@ -38,3 +38,9 @@ out/
 
 ### Project Data ###
 grab_posisi_data.csv
+
+### k6 performance test reports ###
+*.html
+
+### macOS ###
+.DS_Store
