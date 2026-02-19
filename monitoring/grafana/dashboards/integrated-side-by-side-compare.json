@@ -1,0 +1,640 @@
+{
+  "uid": "integrated-side-by-side-compare",
+  "title": "통합 비교 분석 대시보드 (Side-by-Side)",
+  "timezone": "browser",
+  "schemaVersion": 37,
+  "version": 1,
+  "refresh": "5s",
+  "tags": ["compare", "side-by-side", "kafka", "redis", "rdbms", "performance"],
+  "time": { "from": "now-6h", "to": "now" },
+  "graphTooltip": 1,
+  "editable": true,
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "name": "주석 및 알림",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "type": "datasource",
+        "name": "datasource",
+        "label": "데이터 소스",
+        "query": "prometheus",
+        "refresh": 1,
+        "hide": 0
+      },
+
+      {
+        "type": "query",
+        "name": "application_left",
+        "label": "LEFT 애플리케이션",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "refresh": 1,
+        "definition": "label_values(http_server_requests_seconds_count, application)",
+        "query": { "query": "label_values(http_server_requests_seconds_count, application)" },
+        "hide": 0
+      },
+      {
+        "type": "query",
+        "name": "application_right",
+        "label": "RIGHT 애플리케이션",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "refresh": 1,
+        "definition": "label_values(http_server_requests_seconds_count, application)",
+        "query": { "query": "label_values(http_server_requests_seconds_count, application)" },
+        "hide": 0
+      },
+
+      {
+        "type": "textbox",
+        "name": "total_uri_regex_left",
+        "label": "LEFT 전체 URI 정규식",
+        "query": ".*(kafka|redis).*",
+        "current": { "text": ".*(kafka|redis).*", "value": ".*(kafka|redis).*" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "write_uri_regex_left",
+        "label": "LEFT 쓰기 URI 정규식",
+        "query": ".*kafka.*",
+        "current": { "text": ".*kafka.*", "value": ".*kafka.*" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "read_uri_regex_left",
+        "label": "LEFT 읽기 URI 정규식",
+        "query": ".*redis.*",
+        "current": { "text": ".*redis.*", "value": ".*redis.*" },
+        "hide": 0
+      },
+
+      {
+        "type": "textbox",
+        "name": "total_uri_regex_right",
+        "label": "RIGHT 전체 URI 정규식",
+        "query": ".*rdbms.*",
+        "current": { "text": ".*rdbms.*", "value": ".*rdbms.*" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "write_uri_regex_right",
+        "label": "RIGHT 쓰기 URI 정규식",
+        "query": ".*rdbms/update.*",
+        "current": { "text": ".*rdbms/update.*", "value": ".*rdbms/update.*" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "read_uri_regex_right",
+        "label": "RIGHT 읽기 URI 정규식",
+        "query": ".*rdbms/search/.*",
+        "current": { "text": ".*rdbms/search/.*", "value": ".*rdbms/search/.*" },
+        "hide": 0
+      }
+    ]
+  },
+
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "📌 개요 — LEFT vs RIGHT (처리량/오류율)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "LEFT 전체 처리량 (RPS)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "RIGHT 전체 처리량 (RPS)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) ) or vector(0)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps" },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "LEFT 오류율 (HTTP 5xx, %)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(\n  100 * (\n    (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) )\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ), 0.0001)\n  )\n) or vector(0)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent" },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "RIGHT 오류율 (HTTP 5xx, %)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(\n  100 * (\n    (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", status=~\"5..\"}[$__rate_interval])) )\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) ), 0.0001)\n  )\n) or vector(0)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent" },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto"
+      }
+    },
+
+    {
+      "id": 6,
+      "type": "row",
+      "title": "✍️ 쓰기 성능 — LEFT vs RIGHT (RPS / P95·P99)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "LEFT 쓰기 처리량 (Write RPS)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])) ) or vector(0)",
+          "legendFormat": "LEFT Write RPS",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "RIGHT 쓰기 처리량 (Write RPS)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])) ) or vector(0)",
+          "legendFormat": "RIGHT Write RPS",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "LEFT 쓰기 지연 (P95 / P99, s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "RIGHT 쓰기 지연 (P95 / P99, s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 11,
+      "type": "row",
+      "title": "🔍 읽기 성능 — LEFT vs RIGHT (RPS / P95·P99)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 }
+    },
+
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "LEFT 읽기 처리량 (Read RPS)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 23 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])) ) or vector(0)",
+          "legendFormat": "LEFT Read RPS",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true } },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "RIGHT 읽기 처리량 (Read RPS)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 23 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])) ) or vector(0)",
+          "legendFormat": "RIGHT Read RPS",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true } },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 14,
+      "type": "timeseries",
+      "title": "LEFT 읽기 지연 (P95 / P99, s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 31 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "RIGHT 읽기 지연 (P95 / P99, s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 31 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 16,
+      "type": "row",
+      "title": "🧊 신선도(선택) — LEFT vs RIGHT (Freshness P95·P99)",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 }
+    },
+
+    {
+      "id": 17,
+      "type": "timeseries",
+      "title": "LEFT 신선도 지연 (P95 / P99, s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(histogram_quantile(0.95, sum by (le) (rate(location_event_freshness_seconds_bucket{application=\"$application_left\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(histogram_quantile(0.99, sum by (le) (rate(location_event_freshness_seconds_bucket{application=\"$application_left\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+    },
+    {
+      "id": 18,
+      "type": "timeseries",
+      "title": "RIGHT 신선도 지연 (P95 / P99, s)",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(histogram_quantile(0.95, sum by (le) (rate(location_event_freshness_seconds_bucket{application=\"$application_right\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(histogram_quantile(0.99, sum by (le) (rate(location_event_freshness_seconds_bucket{application=\"$application_right\"}[$__rate_interval])))) or vector(0)",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+    },
+
+    {
+      "id": 19,
+      "type": "row",
+      "title": "📈 상대 비교(분석용) — RIGHT가 LEFT 대비 얼마나 나쁜가/좋은가",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 48 }
+    },
+
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "쓰기 P95 변화율 (RIGHT/LEFT - 1, %)",
+      "description": "0%면 동일, +50%면 RIGHT가 LEFT 대비 쓰기 P95가 1.5배(50% 더 큼).",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 49 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (\n  (\n    histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])))\n    /\n    clamp_min(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval]))), 0.000001)\n  ) - 1\n)",
+          "legendFormat": "Write P95 Δ(%)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+    },
+
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "읽기 P95 변화율 (RIGHT/LEFT - 1, %)",
+      "description": "0%면 동일, +50%면 RIGHT가 LEFT 대비 읽기 P95가 1.5배(50% 더 큼).",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 49 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (\n  (\n    histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])))\n    /\n    clamp_min(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval]))), 0.000001)\n  ) - 1\n)",
+          "legendFormat": "Read P95 Δ(%)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+    },
+
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "오류율 차이 (RIGHT - LEFT, %p)",
+      "description": "오류율이 ‘퍼센트 포인트’로 얼마나 차이나는지(예: RIGHT 2.0%, LEFT 0.5% → +1.5%p).",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 57 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(\n  (\n    100 * (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", status=~\"5..\"}[$__rate_interval])) / clamp_min(sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])), 0.0001))\n  )\n  -\n  (\n    100 * (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) / clamp_min(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])), 0.0001))\n  )\n)",
+          "legendFormat": "Error Δ(%p)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+    },
+
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "전체 처리량 변화율 (RIGHT/LEFT - 1, %)",
+      "description": "부하(초당 요청 수)가 RIGHT가 더 큰지/작은지 확인.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 57 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * (\n  (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval]))\n   /\n   clamp_min(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])), 0.000001)\n  ) - 1\n)",
+          "legendFormat": "Total RPS Δ(%)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
+      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+    }
+  ]
+}
