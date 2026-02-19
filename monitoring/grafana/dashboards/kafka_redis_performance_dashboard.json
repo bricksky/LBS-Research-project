@@ -1,0 +1,533 @@
+{
+  "uid": "kafka-redis-performance-minimal",
+  "title": "Kafka·Redis 성능 대시보드 (최소 핵심/비교용)",
+  "timezone": "browser",
+  "schemaVersion": 37,
+  "version": 1,
+  "refresh": "5s",
+  "tags": ["kafka", "redis", "performance", "minimal", "compare"],
+  "time": { "from": "now-15m", "to": "now" },
+  "graphTooltip": 1,
+  "editable": true,
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "name": "주석 및 알림",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "templating": {
+    "list": [
+      {
+        "type": "datasource",
+        "name": "datasource",
+        "label": "데이터 소스",
+        "query": "prometheus",
+        "refresh": 1,
+        "hide": 0
+      },
+      {
+        "type": "query",
+        "name": "application",
+        "label": "애플리케이션",
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "refresh": 1,
+        "definition": "label_values(http_server_requests_seconds_count, application)",
+        "query": { "query": "label_values(http_server_requests_seconds_count, application)" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "write_uri_regex",
+        "label": "쓰기 URI 정규식",
+        "query": ".*kafka.*",
+        "current": { "text": ".*kafka.*", "value": ".*kafka.*" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "read_uri_regex",
+        "label": "읽기 URI 정규식",
+        "query": ".*redis.*",
+        "current": { "text": ".*redis.*", "value": ".*redis.*" },
+        "hide": 0
+      },
+      {
+        "type": "textbox",
+        "name": "dep_uri_regex",
+        "label": "의존성 URI 정규식(클라이언트)",
+        "query": ".*(kafka|redis).*",
+        "current": { "text": ".*(kafka|redis).*", "value": ".*(kafka|redis).*" },
+        "hide": 0
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "📌 개요 (핵심 KPI) — 처리량/지연/신선도 상태",
+      "description": "처리량(RPS)=초당 처리 요청 수, 지연(P95/P99)=요청 응답시간의 백분위수. P95는 '95% 요청이 이 값 이하', P99는 '99% 요청이 이 값 이하(꼬리 지연)'를 의미합니다. 신선도는 Event→DB 반영 지연 지표를 의미합니다.",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
+    },
+
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "전체 처리량 (RPS)",
+      "description": "쓰기+읽기 합산 처리량. 서비스가 현재 얼마나 바쁘게 요청을 처리하는지(초당 요청 수)를 봅니다.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval])) + sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval]))",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 200 },
+              { "color": "red", "value": 500 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto"
+      }
+    },
+
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "쓰기 지연 (P95 / P99, 최근, 초)",
+      "description": "쓰기 API 응답시간의 백분위수. P95=95% 이하, P99=꼬리 지연(99% 이하).",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "fixed", "fixedColor": "#5794F2" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      }
+    },
+
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "읽기 지연 (P95 / P99, 최근, 초)",
+      "description": "읽기 API 응답시간의 백분위수. P95=95% 이하, P99=꼬리 지연(99% 이하).",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "fixed", "fixedColor": "#5794F2" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      }
+    },
+
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "데이터 신선도 지연 (P95 / P99, 최근, 초)",
+      "description": "데이터 신선도(End-to-End Lag)=요청에 포함된 timestamp(데이터 생성 시점)부터 저장 완료까지 걸린 시간. P95=95% 이하, P99=꼬리 지연(99% 이하).",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(location_event_freshness_seconds_bucket{application=\"$application\"}[$__rate_interval])))",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(location_event_freshness_seconds_bucket{application=\"$application\"}[$__rate_interval])))",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "color": { "mode": "fixed", "fixedColor": "#5794F2" } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }]
+          }
+        ]
+      },
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value_and_name"
+      }
+    },
+
+    {
+      "id": 6,
+      "type": "row",
+      "title": "🧩 섹션 0. 시스템/의존성 (추가 1줄) — CPU·오류율",
+      "description": "지연이 튈 때 원인 후보를 빠르게 좁히기 위한 최소 지표입니다. CPU 사용률이 높으면 전반 지연이 상승할 수 있고, 오류율(5xx)이 함께 오르면 포화/장애 가능성이 큽니다.",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 }
+    },
+
+    {
+      "id": 7,
+      "type": "gauge",
+      "title": "CPU 사용률(프로세스/시스템, %)",
+      "description": "process_cpu_usage가 없으면 system_cpu_usage로 대체하여 표시합니다. 게이지는 '현재(마지막) 값'을 표시합니다.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 6, "w": 12, "x": 0, "y": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "max((avg(process_cpu_usage{application=\"$application\"}) * 100) or (avg(system_cpu_usage{application=\"$application\"}) * 100))",
+          "legendFormat": "CPU(%)",
+          "editorMode": "code",
+          "range": false,
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"], "fields": "" },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "orientation": "auto"
+      }
+    },
+
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "오류율 (서버 오류, 쓰기/읽기, %)",
+      "description": "status(5xx) 또는 outcome(SERVER_ERROR) 기반 오류율. 매칭되는 시계열이 없어도 0%로 표시되도록 vector(0) 보정 포함.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 6, "w": 12, "x": 12, "y": 6 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "(\n  100 * (\n    max(\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$write_uri_regex\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) )\n      OR\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$write_uri_regex\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0) )\n    )\n    /\n    clamp_min( (sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
+          "legendFormat": "쓰기 오류(%)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "(\n  100 * (\n    max(\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$read_uri_regex\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) )\n      OR\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$read_uri_regex\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0) )\n    )\n    /\n    clamp_min( (sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
+          "legendFormat": "읽기 오류(%)",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": { "mode": "thresholds" },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          },
+          "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 10,
+      "type": "row",
+      "title": "✍️ 섹션 1. 쓰기 성능 — 처리량·지연(쓰기)",
+      "description": "쓰기 처리량(RPS)과 쓰기 지연(P95/P99)을 봅니다. 처리량↑ + 지연↑이면 포화/병목 가능성이 높습니다.",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 12 }
+    },
+
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "쓰기 처리량 (Write RPS)",
+      "description": "쓰기 요청 처리량(초당 요청 수). 스파이크가 지연과 같이 증가하는지 확인합니다.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 13 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval]))",
+          "legendFormat": "쓰기 RPS",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "쓰기 지연 (P95 / P99, 초)",
+      "description": "쓰기 응답시간의 P95/P99. P99가 갑자기 치솟으면 일부 요청에서 병목/락/큐잉이 발생했을 가능성이 큽니다.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 13 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$write_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 20,
+      "type": "row",
+      "title": "🔍 섹션 2. 읽기 성능 — 처리량·지연(읽기)",
+      "description": "읽기 처리량(RPS)과 읽기 지연(P95/P99)을 봅니다. 캐시 미스/레디스 지연 등으로 읽기 지연이 늘 수 있습니다.",
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 21 }
+    },
+
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "읽기 처리량 (Read RPS)",
+      "description": "읽기 요청 처리량(초당 요청 수). 쓰기 대비 읽기 비율과 함께 보면 패턴을 파악하기 쉽습니다.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 22 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(http_server_requests_seconds_count{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval]))",
+          "legendFormat": "읽기 RPS",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    },
+
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "읽기 지연 (P95 / P99, 초)",
+      "description": "읽기 응답시간의 P95/P99. P99 상승은 특정 키/작업에서 병목이 생겼을 가능성이 큽니다.",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 22 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P95",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application\", uri=~\"$read_uri_regex\"}[$__rate_interval])))",
+          "legendFormat": "P99",
+          "editorMode": "code",
+          "range": true,
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "P95" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "P99" },
+            "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }]
+          }
+        ]
+      },
+      "options": {
+        "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" },
+        "tooltip": { "mode": "single" }
+      }
+    }
+  ]
+}

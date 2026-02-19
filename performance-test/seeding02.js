@@ -1,6 +1,6 @@
 import http from 'k6/http';
-import { check } from 'k6';
-import { SharedArray } from 'k6/data';
+import {check} from 'k6';
+import {SharedArray} from 'k6/data';
 import exec from 'k6/execution';
 import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
 
