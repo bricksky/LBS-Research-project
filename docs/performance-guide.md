@@ -84,7 +84,52 @@ k6 run --out 'web-dashboard=export=docs/results/report_query_kafka.html' perform
 
 ---
 
-## 4. 환경 종료 및 관리
+## 4. Redis Stream 테스트 워크플로우 (Port: 8083)
+
+Redis Stream 기반 처리(예: XADD → Consumer Group 처리 → 저장/조회)를 측정하는 단계입니다.
+
+### 4.1 인프라 실행 (Redis Stream 전용 Redis & Monitoring)
+
+Redis Stream 비교군을 **Kafka 워크플로우의 Redis와 분리**해서 운영하는 것을 권장합니다.
+
+(이유: 동일 Redis 인스턴스를 공유하면 키/Stream/consumer-group 충돌, 메모리/IO 간섭, 잔존 데이터 영향이 생겨 “공정 비교”가 어려워짐)
+
+### 권장: Stream 전용 Redis 컨테이너를 별도로 실행
+
+- docker-compose.yml에 `redis-stream` 서비스가 있다고 가정합니다.
+- 컨테이너명도 기존 Redis와 다르게(예: `lbs-research-redis-stream`) 잡는 것을 권장합니다.
+
+```markdown
+# 1. 모든 컨테이너 정지
+docker-compose stop
+
+# 2. Redis(Stream 전용) + 모니터링만 실행
+docker-compose up -d redis-stream prometheus grafana
+```
+
+### 4.2 애플리케이션 실행 (Port 8083)
+
+```
+# 별도 터미널에서 실행
+java-jar itrc-api-stream/build/libs/itrc-api-stream-0.0.1-SNAPSHOT.jar
+```
+
+### 4.3 k6 부하 테스트 실행 (Stream용 스크립트)
+
+Stream 비교군도 같은 부하 패턴을 맞추기 위해, k6 스크립트를 **Stream 전용**으로 분리해서 실행합니다.
+
+```
+# 1. 데이터 시딩 (Seeding) 테스트
+k6 run--out'web-dashboard=export=docs/results/report_seeding_stream.html' performance-test/seeding03.js
+
+# 2. 위치 업데이트 (Update)
+k6 run--out'web-dashboard=export=docs/results/report_update_stream.html' performance-test/update03.js
+
+# 3. 공간 검색 (Query)
+k6 run--out'web-dashboard=export=docs/results/report_query_stream.html' pe
+```
+
+## 5. 환경 종료 및 관리
 
 테스트가 끝나면 컨테이너를 정지하여 리소스를 확보합니다.
 
@@ -98,7 +143,7 @@ docker-compose down -v
 
 ---
 
-## 5. 모니터링 및 결과 확인
+## 6. 모니터링 및 결과 확인
 
 - **Grafana 접속**: `http://localhost:3000` (ID: `admin` / PW: `password`)
 - **HTML 리포트**: 각 테스트 실행 후 생성된 `docs/results/report_*.html` 파일을 브라우저로 확인
