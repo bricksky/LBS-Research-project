@@ -1,9 +1,9 @@
 {
   "uid": "integrated-side-by-side-compare",
-  "title": "통합 비교 분석 대시보드 (3-Way Fixed: 1=RDBMS, 2=Kafka, 3=Redis Stream)",
+  "title": "통합 비교 분석 대시보드 (고정: RDBMS vs Kafka vs Redis Stream)",
   "timezone": "browser",
   "schemaVersion": 37,
-  "version": 3,
+  "version": 4,
   "refresh": "5s",
   "tags": ["compare", "side-by-side", "kafka", "redis", "stream", "rdbms", "performance"],
   "time": { "from": "now-6h", "to": "now" },
@@ -31,11 +31,10 @@
         "refresh": 1,
         "hide": 0
       },
-
       {
         "type": "constant",
         "name": "application_left",
-        "label": "1) RDBMS 애플리케이션",
+        "label": "RDBMS 애플리케이션",
         "query": "itrc-api-rdbms",
         "current": { "text": "itrc-api-rdbms", "value": "itrc-api-rdbms" },
         "hide": 2
@@ -43,7 +42,7 @@
       {
         "type": "constant",
         "name": "application_middle",
-        "label": "2) Kafka 애플리케이션",
+        "label": "Kafka 애플리케이션",
         "query": "itrc-api-kafka",
         "current": { "text": "itrc-api-kafka", "value": "itrc-api-kafka" },
         "hide": 2
@@ -51,16 +50,15 @@
       {
         "type": "constant",
         "name": "application_right",
-        "label": "3) Redis Stream 애플리케이션",
+        "label": "Redis Stream 애플리케이션",
         "query": "itrc-api-redis-stream",
         "current": { "text": "itrc-api-redis-stream", "value": "itrc-api-redis-stream" },
         "hide": 2
       },
-
       {
         "type": "constant",
         "name": "total_uri_regex_left",
-        "label": "1) RDBMS 전체 URI 정규식",
+        "label": "RDBMS 전체 URI 정규식",
         "query": ".*/api/v1/rdbms/.*",
         "current": { "text": ".*/api/v1/rdbms/.*", "value": ".*/api/v1/rdbms/.*" },
         "hide": 2
@@ -68,7 +66,7 @@
       {
         "type": "constant",
         "name": "write_uri_regex_left",
-        "label": "1) RDBMS 쓰기 URI 정규식",
+        "label": "RDBMS 쓰기 URI 정규식",
         "query": ".*/api/v1/rdbms/update.*",
         "current": { "text": ".*/api/v1/rdbms/update.*", "value": ".*/api/v1/rdbms/update.*" },
         "hide": 2
@@ -76,16 +74,15 @@
       {
         "type": "constant",
         "name": "read_uri_regex_left",
-        "label": "1) RDBMS 읽기 URI 정규식",
+        "label": "RDBMS 읽기 URI 정규식",
         "query": ".*/api/v1/rdbms/search/.*",
         "current": { "text": ".*/api/v1/rdbms/search/.*", "value": ".*/api/v1/rdbms/search/.*" },
         "hide": 2
       },
-
       {
         "type": "constant",
         "name": "total_uri_regex_middle",
-        "label": "2) Kafka 전체 URI 정규식",
+        "label": "Kafka 전체 URI 정규식",
         "query": ".*(kafka|redis).*",
         "current": { "text": ".*(kafka|redis).*", "value": ".*(kafka|redis).*" },
         "hide": 2
@@ -93,7 +90,7 @@
       {
         "type": "constant",
         "name": "write_uri_regex_middle",
-        "label": "2) Kafka 쓰기 URI 정규식",
+        "label": "Kafka 쓰기 URI 정규식",
         "query": ".*kafka.*",
         "current": { "text": ".*kafka.*", "value": ".*kafka.*" },
         "hide": 2
@@ -101,16 +98,15 @@
       {
         "type": "constant",
         "name": "read_uri_regex_middle",
-        "label": "2) Kafka 읽기 URI 정규식",
+        "label": "Kafka 읽기 URI 정규식",
         "query": ".*redis.*",
         "current": { "text": ".*redis.*", "value": ".*redis.*" },
         "hide": 2
       },
-
       {
         "type": "constant",
         "name": "total_uri_regex_right",
-        "label": "3) Redis Stream 전체 URI 정규식",
+        "label": "Redis Stream 전체 URI 정규식",
         "query": ".*/api/v1/redis/.*",
         "current": { "text": ".*/api/v1/redis/.*", "value": ".*/api/v1/redis/.*" },
         "hide": 2
@@ -118,7 +114,7 @@
       {
         "type": "constant",
         "name": "write_uri_regex_right",
-        "label": "3) Redis Stream 쓰기 URI 정규식",
+        "label": "Redis Stream 쓰기 URI 정규식",
         "query": ".*/api/v1/redis/update.*",
         "current": { "text": ".*/api/v1/redis/update.*", "value": ".*/api/v1/redis/update.*" },
         "hide": 2
@@ -126,27 +122,25 @@
       {
         "type": "constant",
         "name": "read_uri_regex_right",
-        "label": "3) Redis Stream 읽기 URI 정규식",
+        "label": "Redis Stream 읽기 URI 정규식",
         "query": ".*/api/v1/redis/search/.*",
         "current": { "text": ".*/api/v1/redis/search/.*", "value": ".*/api/v1/redis/search/.*" },
         "hide": 2
       }
     ]
   },
-
   "panels": [
     {
       "id": 1,
       "type": "row",
-      "title": "📌 개요 — LEFT vs MIDDLE vs RIGHT (처리량/오류율)",
+      "title": "📌 개요 — RDBMS vs Kafka vs Redis Stream (처리량/오류율)",
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }
     },
-
     {
       "id": 2,
       "type": "stat",
-      "title": "LEFT 전체 처리량 (RPS)",
+      "title": "RDBMS 전체 처리량 (RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 8, "x": 0, "y": 1 },
       "targets": [
@@ -170,7 +164,7 @@
     {
       "id": 3,
       "type": "stat",
-      "title": "MIDDLE 전체 처리량 (RPS)",
+      "title": "Kafka 전체 처리량 (RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 8, "x": 8, "y": 1 },
       "targets": [
@@ -194,7 +188,7 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "RIGHT 전체 처리량 (RPS)",
+      "title": "Redis Stream 전체 처리량 (RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 8, "x": 16, "y": 1 },
       "targets": [
@@ -215,84 +209,80 @@
         "textMode": "auto"
       }
     },
-
     {
       "id": 5,
-      "type": "stat",
-      "title": "LEFT 오류율 (서버 오류, %)",
+      "type": "gauge",
+      "title": "RDBMS 오류율 (서버 오류, %)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 8, "x": 0, "y": 5 },
       "targets": [
         {
           "refId": "A",
-          "expr": "(\n  100 * (\n    max(\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) )\n      or\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0) )\n    )\n    /\n    clamp_min( (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
+          "expr": "(\n  100 * (\n    (\n      (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) )\n      or\n      (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n      or vector(0)\n    )\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
           "editorMode": "code",
           "range": true,
           "instant": false
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 5 }, "overrides": [] },
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
-        "orientation": "horizontal",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       }
     },
     {
       "id": 6,
-      "type": "stat",
-      "title": "MIDDLE 오류율 (서버 오류, %)",
+      "type": "gauge",
+      "title": "Kafka 오류율 (서버 오류, %)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 8, "x": 8, "y": 5 },
       "targets": [
         {
           "refId": "A",
-          "expr": "(\n  100 * (\n    max(\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) )\n      or\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0) )\n    )\n    /\n    clamp_min( (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
+          "expr": "(\n  100 * (\n    (\n      (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", status=~\"5..\"}[$__rate_interval])) )\n      or\n      (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n      or vector(0)\n    )\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
           "editorMode": "code",
           "range": true,
           "instant": false
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 5 }, "overrides": [] },
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
-        "orientation": "horizontal",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       }
     },
     {
       "id": 7,
-      "type": "stat",
-      "title": "RIGHT 오류율 (서버 오류, %)",
+      "type": "gauge",
+      "title": "Redis Stream 오류율 (서버 오류, %)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 8, "x": 16, "y": 5 },
       "targets": [
         {
           "refId": "A",
-          "expr": "(\n  100 * (\n    max(\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) )\n      or\n      ( (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0) )\n    )\n    /\n    clamp_min( (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
+          "expr": "(\n  100 * (\n    (\n      (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", status=~\"5..\"}[$__rate_interval])) )\n      or\n      (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n      or vector(0)\n    )\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n) or vector(0)",
           "editorMode": "code",
           "range": true,
           "instant": false
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "percent" }, "overrides": [] },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 5 }, "overrides": [] },
       "options": {
-        "reduceOptions": { "calcs": ["lastNotNull"], "values": false },
-        "orientation": "horizontal",
-        "colorMode": "value",
-        "graphMode": "none",
-        "textMode": "auto"
+        "reduceOptions": { "values": false, "calcs": ["lastNotNull"] },
+        "orientation": "auto",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       }
     },
 
     {
       "id": 8,
       "type": "row",
-      "title": "✍️ 쓰기 성능 — LEFT vs MIDDLE vs RIGHT (RPS / P95·P99)",
+      "title": "✍️ 쓰기 성능 — RDBMS vs Kafka vs Redis Stream (RPS / P95·P99)",
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 }
     },
@@ -300,17 +290,20 @@
     {
       "id": 9,
       "type": "timeseries",
-      "title": "LEFT 쓰기 처리량 (Write RPS)",
+      "title": "RDBMS 쓰기 처리량 (Write RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 10 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
           "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])) ) or vector(0)",
-          "legendFormat": "LEFT Write RPS",
+          "legendFormat": "RDBMS Write RPS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
@@ -325,17 +318,20 @@
     {
       "id": 10,
       "type": "timeseries",
-      "title": "MIDDLE 쓰기 처리량 (Write RPS)",
+      "title": "Kafka 쓰기 처리량 (Write RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 10 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
           "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$write_uri_regex_middle\"}[$__rate_interval])) ) or vector(0)",
-          "legendFormat": "MIDDLE Write RPS",
+          "legendFormat": "Kafka Write RPS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
@@ -350,17 +346,20 @@
     {
       "id": 11,
       "type": "timeseries",
-      "title": "RIGHT 쓰기 처리량 (Write RPS)",
+      "title": "Redis Stream 쓰기 처리량 (Write RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 10 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
           "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])) ) or vector(0)",
-          "legendFormat": "RIGHT Write RPS",
+          "legendFormat": "RedisStream Write RPS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
@@ -376,9 +375,10 @@
     {
       "id": 12,
       "type": "timeseries",
-      "title": "LEFT 쓰기 지연 (P95 / P99, s)",
+      "title": "RDBMS 쓰기 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 18 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -386,7 +386,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -394,11 +396,13 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
@@ -409,9 +413,10 @@
     {
       "id": 13,
       "type": "timeseries",
-      "title": "MIDDLE 쓰기 지연 (P95 / P99, s)",
+      "title": "Kafka 쓰기 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 18 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -419,7 +424,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -427,11 +434,13 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
@@ -442,9 +451,10 @@
     {
       "id": 14,
       "type": "timeseries",
-      "title": "RIGHT 쓰기 지연 (P95 / P99, s)",
+      "title": "Redis Stream 쓰기 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 18 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -452,7 +462,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -460,11 +472,13 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
@@ -476,7 +490,7 @@
     {
       "id": 15,
       "type": "row",
-      "title": "🔍 읽기 성능 — LEFT vs MIDDLE vs RIGHT (RPS / P95·P99)",
+      "title": "🔍 읽기 성능 — RDBMS vs Kafka vs Redis Stream (RPS / P95·P99)",
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 }
     },
@@ -484,67 +498,92 @@
     {
       "id": 16,
       "type": "timeseries",
-      "title": "LEFT 읽기 처리량 (Read RPS)",
+      "title": "RDBMS 읽기 처리량 (Read RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 27 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
           "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])) ) or vector(0)",
-          "legendFormat": "LEFT Read RPS",
+          "legendFormat": "RDBMS Read RPS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true } }, "overrides": [] },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      }
     },
     {
       "id": 17,
       "type": "timeseries",
-      "title": "MIDDLE 읽기 처리량 (Read RPS)",
+      "title": "Kafka 읽기 처리량 (Read RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 27 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
           "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$read_uri_regex_middle\"}[$__rate_interval])) ) or vector(0)",
-          "legendFormat": "MIDDLE Read RPS",
+          "legendFormat": "Kafka Read RPS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true } }, "overrides": [] },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      }
     },
     {
       "id": 18,
       "type": "timeseries",
-      "title": "RIGHT 읽기 처리량 (Read RPS)",
+      "title": "Redis Stream 읽기 처리량 (Read RPS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 27 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
           "expr": "(sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])) ) or vector(0)",
-          "legendFormat": "RIGHT Read RPS",
+          "legendFormat": "RedisStream Read RPS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
-      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true } }, "overrides": [] },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "bars", "fillOpacity": 60, "showPoints": "never", "spanNulls": true }
+        },
+        "overrides": []
+      }
     },
 
     {
       "id": 19,
       "type": "timeseries",
-      "title": "LEFT 읽기 지연 (P95 / P99, s)",
+      "title": "RDBMS 읽기 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 35 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -552,7 +591,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -560,24 +601,26 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
         ]
-      },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      }
     },
     {
       "id": 20,
       "type": "timeseries",
-      "title": "MIDDLE 읽기 지연 (P95 / P99, s)",
+      "title": "Kafka 읽기 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 35 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -585,7 +628,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -593,24 +638,26 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
         ]
-      },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      }
     },
     {
       "id": 21,
       "type": "timeseries",
-      "title": "RIGHT 읽기 지연 (P95 / P99, s)",
+      "title": "Redis Stream 읽기 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 35 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -618,7 +665,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -626,23 +675,24 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
         ]
-      },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      }
     },
 
     {
       "id": 22,
       "type": "row",
-      "title": "🧊 신선도(선택) — LEFT vs MIDDLE vs RIGHT (Freshness P95·P99)",
+      "title": "🧊 신선도 — RDBMS vs Kafka vs Redis Stream (Freshness P95·P99)",
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 43 }
     },
@@ -650,9 +700,10 @@
     {
       "id": 23,
       "type": "timeseries",
-      "title": "LEFT 신선도 지연 (P95 / P99, s)",
+      "title": "RDBMS 신선도 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 44 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -660,7 +711,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -668,24 +721,26 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
         ]
-      },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      }
     },
     {
       "id": 24,
       "type": "timeseries",
-      "title": "MIDDLE 신선도 지연 (P95 / P99, s)",
+      "title": "Kafka 신선도 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 8, "y": 44 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -693,7 +748,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -701,24 +758,26 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
         ]
-      },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      }
     },
     {
       "id": 25,
       "type": "timeseries",
-      "title": "RIGHT 신선도 지연 (P95 / P99, s)",
+      "title": "Redis Stream 신선도 지연 (P95 / P99, s)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 44 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
@@ -726,7 +785,9 @@
           "legendFormat": "P95",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
@@ -734,23 +795,24 @@
           "legendFormat": "P99",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": {
-        "defaults": { "unit": "s", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } },
+        "defaults": { "unit": "s" },
         "overrides": [
           { "matcher": { "id": "byName", "options": "P95" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#5794F2" } }] },
           { "matcher": { "id": "byName", "options": "P99" }, "properties": [{ "id": "color", "value": { "mode": "fixed", "fixedColor": "#B877D9" } }] }
         ]
-      },
-      "options": { "legend": { "showLegend": true, "placement": "bottom", "displayMode": "list" }, "tooltip": { "mode": "single" } }
+      }
     },
 
     {
       "id": 26,
       "type": "row",
-      "title": "📈 상대 비교(분석용) — LEFT 대비 MIDDLE/RIGHT 변화",
+      "title": "📈 상대 비교(분석용) — RDBMS 대비 Kafka/Redis Stream 변화",
       "collapsed": false,
       "gridPos": { "h": 1, "w": 24, "x": 0, "y": 52 }
     },
@@ -758,26 +820,30 @@
     {
       "id": 27,
       "type": "timeseries",
-      "title": "쓰기 P95 변화율 (MIDDLE/LEFT, RIGHT/LEFT, %)",
-      "description": "0%면 동일, +50%면 LEFT 대비 1.5배(50% 더 큼).",
+      "title": "쓰기 P95 변화율 (Kafka/RDBMS, RedisStream/RDBMS, %)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 53 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_middle\", uri=~\"$write_uri_regex_middle\"}[$__rate_interval]))) / clamp_min(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval]))), 0.000001)) - 1)",
-          "legendFormat": "MIDDLE vs LEFT",
+          "expr": "(\n  100 * (\n    (\n      ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_middle\", uri=~\"$write_uri_regex_middle\"}[$__rate_interval])))) or vector(0))\n      /\n      clamp_min(((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])))) or vector(0)), 0.000001)\n    ) - 1\n  )\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_middle\", uri=~\"$write_uri_regex_middle\"}[$__rate_interval])))) or vector(0)) > bool 0)\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])))) or vector(0)) > bool 0)\n) or vector(0)",
+          "legendFormat": "Kafka / RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
-          "expr": "100 * ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval]))) / clamp_min(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval]))), 0.000001)) - 1)",
-          "legendFormat": "RIGHT vs LEFT",
+          "expr": "(\n  100 * (\n    (\n      ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])))) or vector(0))\n      /\n      clamp_min(((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])))) or vector(0)), 0.000001)\n    ) - 1\n  )\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$write_uri_regex_right\"}[$__rate_interval])))) or vector(0)) > bool 0)\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$write_uri_regex_left\"}[$__rate_interval])))) or vector(0)) > bool 0)\n) or vector(0)",
+          "legendFormat": "RedisStream / RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
@@ -787,26 +853,30 @@
     {
       "id": 28,
       "type": "timeseries",
-      "title": "읽기 P95 변화율 (MIDDLE/LEFT, RIGHT/LEFT, %)",
-      "description": "0%면 동일, +50%면 LEFT 대비 1.5배(50% 더 큼).",
+      "title": "읽기 P95 변화율 (Kafka/RDBMS, RedisStream/RDBMS, %)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 53 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_middle\", uri=~\"$read_uri_regex_middle\"}[$__rate_interval]))) / clamp_min(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval]))), 0.000001)) - 1)",
-          "legendFormat": "MIDDLE vs LEFT",
+          "expr": "(\n  100 * (\n    (\n      ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_middle\", uri=~\"$read_uri_regex_middle\"}[$__rate_interval])))) or vector(0))\n      /\n      clamp_min(((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])))) or vector(0)), 0.000001)\n    ) - 1\n  )\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_middle\", uri=~\"$read_uri_regex_middle\"}[$__rate_interval])))) or vector(0)) > bool 0)\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])))) or vector(0)) > bool 0)\n) or vector(0)",
+          "legendFormat": "Kafka / RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
-          "expr": "100 * ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval]))) / clamp_min(histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval]))), 0.000001)) - 1)",
-          "legendFormat": "RIGHT vs LEFT",
+          "expr": "(\n  100 * (\n    (\n      ((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])))) or vector(0))\n      /\n      clamp_min(((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])))) or vector(0)), 0.000001)\n    ) - 1\n  )\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_right\", uri=~\"$read_uri_regex_right\"}[$__rate_interval])))) or vector(0)) > bool 0)\n  * (((histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{application=\"$application_left\", uri=~\"$read_uri_regex_left\"}[$__rate_interval])))) or vector(0)) > bool 0)\n) or vector(0)",
+          "legendFormat": "RedisStream / RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
@@ -816,26 +886,30 @@
     {
       "id": 29,
       "type": "timeseries",
-      "title": "오류율 차이 (MIDDLE-LEFT, RIGHT-LEFT, %p)",
-      "description": "퍼센트포인트 차이(예: 2.0% - 0.5% = +1.5%p).",
+      "title": "오류율 차이 (%p) (Kafka-RDBMS, RedisStream-RDBMS)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 61 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
-          "expr": "(\n  (\n    100 * (max((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) ) or ((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0)))\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n  -\n  (\n    100 * (max((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) ) or ((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0)))\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n)",
-          "legendFormat": "MIDDLE - LEFT",
+          "expr": "(\n  (\n    100 * (\n      (\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", status=~\"5..\"}[$__rate_interval])) )\n        or\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n        or vector(0)\n      )\n      /\n      clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval])) ) or vector(0), 0.0001)\n    )\n  )\n  -\n  (\n    100 * (\n      (\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) )\n        or\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n        or vector(0)\n      )\n      /\n      clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0), 0.0001)\n    )\n  )\n) or vector(0)",
+          "legendFormat": "Kafka - RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
-          "expr": "(\n  (\n    100 * (max((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) ) or ((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0)))\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n  -\n  (\n    100 * (max((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) ) or vector(0) ) or ((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) ) or vector(0)))\n    /\n    clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0), 0.0001)\n  )\n)",
-          "legendFormat": "RIGHT - LEFT",
+          "expr": "(\n  (\n    100 * (\n      (\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", status=~\"5..\"}[$__rate_interval])) )\n        or\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n        or vector(0)\n      )\n      /\n      clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) ) or vector(0), 0.0001)\n    )\n  )\n  -\n  (\n    100 * (\n      (\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", status=~\"5..\"}[$__rate_interval])) )\n        or\n        (sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\", outcome=\"SERVER_ERROR\"}[$__rate_interval])) )\n        or vector(0)\n      )\n      /\n      clamp_min((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])) ) or vector(0), 0.0001)\n    )\n  )\n) or vector(0)",
+          "legendFormat": "RedisStream - RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
@@ -845,26 +919,30 @@
     {
       "id": 30,
       "type": "timeseries",
-      "title": "전체 처리량 변화율 (MIDDLE/LEFT - 1, RIGHT/LEFT - 1, %)",
-      "description": "부하(초당 요청 수)가 LEFT 대비 얼마나 큰지/작은지 확인.",
+      "title": "전체 처리량 변화율 (Kafka/RDBMS - 1, RedisStream/RDBMS - 1, %)",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 61 },
+      "maxDataPoints": 720,
       "targets": [
         {
           "refId": "A",
-          "expr": "100 * ((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval])) / clamp_min(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])), 0.000001)) - 1)",
-          "legendFormat": "MIDDLE vs LEFT",
+          "expr": "(\n  100 * (\n    (\n      ((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval]))) or vector(0))\n      /\n      clamp_min(((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval]))) or vector(0)), 0.000001)\n    ) - 1\n  )\n  * (((sum(rate(http_server_requests_seconds_count{application=\"$application_middle\", uri=~\"$total_uri_regex_middle\"}[$__rate_interval]))) or vector(0)) > bool 0)\n  * (((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval]))) or vector(0)) > bool 0)\n) or vector(0)",
+          "legendFormat": "Kafka / RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         },
         {
           "refId": "B",
-          "expr": "100 * ((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval])) / clamp_min(sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval])), 0.000001)) - 1)",
-          "legendFormat": "RIGHT vs LEFT",
+          "expr": "(\n  100 * (\n    (\n      ((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval]))) or vector(0))\n      /\n      clamp_min(((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval]))) or vector(0)), 0.000001)\n    ) - 1\n  )\n  * (((sum(rate(http_server_requests_seconds_count{application=\"$application_right\", uri=~\"$total_uri_regex_right\"}[$__rate_interval]))) or vector(0)) > bool 0)\n  * (((sum(rate(http_server_requests_seconds_count{application=\"$application_left\", uri=~\"$total_uri_regex_left\"}[$__rate_interval]))) or vector(0)) > bool 0)\n) or vector(0)",
+          "legendFormat": "RedisStream / RDBMS",
           "editorMode": "code",
           "range": true,
-          "instant": false
+          "instant": false,
+          "interval": "30s",
+          "intervalFactor": 1
         }
       ],
       "fieldConfig": { "defaults": { "unit": "percent", "custom": { "drawStyle": "line", "showPoints": "never", "spanNulls": true } }, "overrides": [] },
