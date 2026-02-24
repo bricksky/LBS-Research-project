@@ -1,9 +1,9 @@
 {
   "uid": "integrated-side-by-side-compare",
-  "title": "통합 비교 분석 대시보드 (3-Way Side-by-Side: LEFT vs MIDDLE vs RIGHT)",
+  "title": "통합 비교 분석 대시보드 (3-Way Fixed: 1=RDBMS, 2=Kafka, 3=Redis Stream)",
   "timezone": "browser",
   "schemaVersion": 37,
-  "version": 2,
+  "version": 3,
   "refresh": "5s",
   "tags": ["compare", "side-by-side", "kafka", "redis", "stream", "rdbms", "performance"],
   "time": { "from": "now-6h", "to": "now" },
@@ -33,109 +33,103 @@
       },
 
       {
-        "type": "query",
+        "type": "constant",
         "name": "application_left",
-        "label": "LEFT 애플리케이션",
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
-        "refresh": 1,
-        "definition": "label_values(http_server_requests_seconds_count, application)",
-        "query": { "query": "label_values(http_server_requests_seconds_count, application)" },
-        "hide": 0
+        "label": "1) RDBMS 애플리케이션",
+        "query": "itrc-api-rdbms",
+        "current": { "text": "itrc-api-rdbms", "value": "itrc-api-rdbms" },
+        "hide": 2
       },
       {
-        "type": "query",
+        "type": "constant",
         "name": "application_middle",
-        "label": "MIDDLE 애플리케이션",
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
-        "refresh": 1,
-        "definition": "label_values(http_server_requests_seconds_count, application)",
-        "query": { "query": "label_values(http_server_requests_seconds_count, application)" },
-        "hide": 0
+        "label": "2) Kafka 애플리케이션",
+        "query": "itrc-api-kafka",
+        "current": { "text": "itrc-api-kafka", "value": "itrc-api-kafka" },
+        "hide": 2
       },
       {
-        "type": "query",
+        "type": "constant",
         "name": "application_right",
-        "label": "RIGHT 애플리케이션",
-        "datasource": { "type": "prometheus", "uid": "${datasource}" },
-        "refresh": 1,
-        "definition": "label_values(http_server_requests_seconds_count, application)",
-        "query": { "query": "label_values(http_server_requests_seconds_count, application)" },
-        "hide": 0
+        "label": "3) Redis Stream 애플리케이션",
+        "query": "itrc-api-redis-stream",
+        "current": { "text": "itrc-api-redis-stream", "value": "itrc-api-redis-stream" },
+        "hide": 2
       },
 
       {
-        "type": "textbox",
+        "type": "constant",
         "name": "total_uri_regex_left",
-        "label": "LEFT 전체 URI 정규식",
+        "label": "1) RDBMS 전체 URI 정규식",
+        "query": ".*/api/v1/rdbms/.*",
+        "current": { "text": ".*/api/v1/rdbms/.*", "value": ".*/api/v1/rdbms/.*" },
+        "hide": 2
+      },
+      {
+        "type": "constant",
+        "name": "write_uri_regex_left",
+        "label": "1) RDBMS 쓰기 URI 정규식",
+        "query": ".*/api/v1/rdbms/update.*",
+        "current": { "text": ".*/api/v1/rdbms/update.*", "value": ".*/api/v1/rdbms/update.*" },
+        "hide": 2
+      },
+      {
+        "type": "constant",
+        "name": "read_uri_regex_left",
+        "label": "1) RDBMS 읽기 URI 정규식",
+        "query": ".*/api/v1/rdbms/search/.*",
+        "current": { "text": ".*/api/v1/rdbms/search/.*", "value": ".*/api/v1/rdbms/search/.*" },
+        "hide": 2
+      },
+
+      {
+        "type": "constant",
+        "name": "total_uri_regex_middle",
+        "label": "2) Kafka 전체 URI 정규식",
         "query": ".*(kafka|redis).*",
         "current": { "text": ".*(kafka|redis).*", "value": ".*(kafka|redis).*" },
-        "hide": 0
+        "hide": 2
       },
       {
-        "type": "textbox",
-        "name": "write_uri_regex_left",
-        "label": "LEFT 쓰기 URI 정규식",
+        "type": "constant",
+        "name": "write_uri_regex_middle",
+        "label": "2) Kafka 쓰기 URI 정규식",
         "query": ".*kafka.*",
         "current": { "text": ".*kafka.*", "value": ".*kafka.*" },
-        "hide": 0
+        "hide": 2
       },
       {
-        "type": "textbox",
-        "name": "read_uri_regex_left",
-        "label": "LEFT 읽기 URI 정규식",
+        "type": "constant",
+        "name": "read_uri_regex_middle",
+        "label": "2) Kafka 읽기 URI 정규식",
         "query": ".*redis.*",
         "current": { "text": ".*redis.*", "value": ".*redis.*" },
-        "hide": 0
+        "hide": 2
       },
 
       {
-        "type": "textbox",
-        "name": "total_uri_regex_middle",
-        "label": "MIDDLE 전체 URI 정규식",
-        "query": ".*stream.*",
-        "current": { "text": ".*stream.*", "value": ".*stream.*" },
-        "hide": 0
-      },
-      {
-        "type": "textbox",
-        "name": "write_uri_regex_middle",
-        "label": "MIDDLE 쓰기 URI 정규식",
-        "query": ".*stream/update.*",
-        "current": { "text": ".*stream/update.*", "value": ".*stream/update.*" },
-        "hide": 0
-      },
-      {
-        "type": "textbox",
-        "name": "read_uri_regex_middle",
-        "label": "MIDDLE 읽기 URI 정규식",
-        "query": ".*stream/search/.*",
-        "current": { "text": ".*stream/search/.*", "value": ".*stream/search/.*" },
-        "hide": 0
-      },
-
-      {
-        "type": "textbox",
+        "type": "constant",
         "name": "total_uri_regex_right",
-        "label": "RIGHT 전체 URI 정규식",
-        "query": ".*rdbms.*",
-        "current": { "text": ".*rdbms.*", "value": ".*rdbms.*" },
-        "hide": 0
+        "label": "3) Redis Stream 전체 URI 정규식",
+        "query": ".*/api/v1/redis/.*",
+        "current": { "text": ".*/api/v1/redis/.*", "value": ".*/api/v1/redis/.*" },
+        "hide": 2
       },
       {
-        "type": "textbox",
+        "type": "constant",
         "name": "write_uri_regex_right",
-        "label": "RIGHT 쓰기 URI 정규식",
-        "query": ".*rdbms/update.*",
-        "current": { "text": ".*rdbms/update.*", "value": ".*rdbms/update.*" },
-        "hide": 0
+        "label": "3) Redis Stream 쓰기 URI 정규식",
+        "query": ".*/api/v1/redis/update.*",
+        "current": { "text": ".*/api/v1/redis/update.*", "value": ".*/api/v1/redis/update.*" },
+        "hide": 2
       },
       {
-        "type": "textbox",
+        "type": "constant",
         "name": "read_uri_regex_right",
-        "label": "RIGHT 읽기 URI 정규식",
-        "query": ".*rdbms/search/.*",
-        "current": { "text": ".*rdbms/search/.*", "value": ".*rdbms/search/.*" },
-        "hide": 0
+        "label": "3) Redis Stream 읽기 URI 정규식",
+        "query": ".*/api/v1/redis/search/.*",
+        "current": { "text": ".*/api/v1/redis/search/.*", "value": ".*/api/v1/redis/search/.*" },
+        "hide": 2
       }
     ]
   },
