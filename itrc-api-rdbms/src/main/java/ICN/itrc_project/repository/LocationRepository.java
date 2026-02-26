@@ -25,7 +25,7 @@ public interface LocationRepository extends JpaRepository<LocationEntity, Long> 
 
     /**
      * [KNN Search] 최근접 k개 개체 검색
-     * <-> 연산자를 활용하여 GIST 인덱스 기반의 고속 유클리드 거리 정렬 수행
+     * <-> 연산자를 활용하여 GIST 인덱스 기반의 고속 거리 정렬 수행(geography 기준)
      */
     @Query(value = """
             SELECT * FROM location_data
