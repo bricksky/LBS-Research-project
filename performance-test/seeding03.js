@@ -20,24 +20,22 @@ export const options = {
 
 export default function () {
     const record = data[Math.floor(Math.random() * data.length)];
-    const virtualTrjId = `user_${__ITER}`;
+    const virtualUserId = `user_${__ITER}`;
 
-    // [수정 핵심] JSON 키 이름을 스프링 DTO(LocationRequest) 필드명과 100% 일치시킴
     const payload = JSON.stringify({
-        trj_id: virtualTrjId,         // userId -> trj_id
-        rawlat: parseFloat(record.rawlat), // latitude -> rawlat
-        rawlng: parseFloat(record.rawlng), // longitude -> rawlng
-        pingtimestamp: Date.now(),    // timestamp -> pingtimestamp
-        driving_mode: "driving",      // 나머지 필드들도 기본값 채워주기
-        osname: "android",
-        speed: 0.0,
-        bearing: 0,
-        accuracy: 0.0
+        userId: virtualUserId,
+        latitude: parseFloat(record.rawlat),
+        longitude: parseFloat(record.rawlng),
+        timestamp: Date.now(),
+        serviceType: "TAXI", // driving_mode 대신 사용
+        heading: parseFloat(record.bearing || 0),
+        speed: parseFloat(record.speed || 0),
+        accuracy: parseFloat(record.accuracy || 1.0),
+        status: "ON_TASK"
     });
 
     const params = {headers: {'Content-Type': 'application/json'}};
-    // 엔드포인트는 기존대로 유지
-    const res = http.post('http://localhost:8080/api/v1/redis/update', payload, params);
+    const res = http.post('http://localhost:8083/api/v1/redis/update', payload, params);
 
-    check(res, {'Streams Seeded': (r) => r.status === 200});
+    check(res, {'Seeding Success': (r) => r.status === 200});
 }

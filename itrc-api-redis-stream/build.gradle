@@ -3,14 +3,12 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-kafka'
+    implementation 'redis.clients:jedis'
 
     // 모니터링
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
 
-    // 테스트 (Testcontainers)
-    testImplementation 'org.springframework.kafka:spring-kafka-test'
-    testImplementation 'org.testcontainers:junit-jupiter:1.19.3'
-    testImplementation 'org.testcontainers:redis:1.19.3'
+    // H3 라이브러리
+    implementation 'com.uber:h3:4.1.1'
 }

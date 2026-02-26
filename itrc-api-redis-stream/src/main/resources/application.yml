@@ -1,0 +1,43 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: itrc-api-redis-stream
+
+  # 가상 스레드 활성화
+  threads:
+    virtual:
+      enabled: true
+
+  # Redis 표준 설정
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+# LBS 서비스 전용 설정
+lbs:
+  stream:
+    name: lbs_stream
+    group: lbs_group
+
+logging:
+  level:
+    ICN.itrc_project: INFO
+    org.springframework.data.redis: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info,prometheus"
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        location.event.freshness: true # 신선도 측정 활성화
+      sla:
+        location.event.freshness: 100ms, 500ms, 1s, 2s

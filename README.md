@@ -68,9 +68,9 @@
 - **부하 테스트 도구**: `k6`
 - **모니터링 스택**: `Prometheus` + `Grafana`
 - **대상 인프라**
-    - **RDBMS**: PostgreSQL 16 + PostGIS
-    - **Message Broker**: Apache Kafka
-    - **In-Memory DB**: Redis (GeoSpatial Index)
+  - **RDBMS**: PostgreSQL 16 + PostGIS
+  - **Message Broker**: Apache Kafka
+  - **In-Memory DB**: Redis (GeoSpatial Index)
 - **데이터셋**: Grab Posisi Open Dataset (약 100,000건의 실제 차량 위치 데이터)
 
 ---
@@ -110,8 +110,8 @@
 ### ✅ 실행 전 안내
 - 애플리케이션 실행은 보통 **별도 터미널**에서 수행하는 것이 편합니다.
 - 두 아키텍처는 포트가 다릅니다.
-    - RDBMS API: **8081**
-    - Kafka API: **8082**
+  - RDBMS API: **8081**
+  - Kafka API: **8082**
 - 이전 컨테이너가 떠 있으면 충돌할 수 있으니, 필요 시 `docker-compose stop`으로 정리 후 진행하세요.
 
 ---
@@ -133,45 +133,83 @@
 ```
 
 ### 1) Infrastructure (Docker)
-```bash
-docker-compose up -d
+
+> 정확한 컨테이너 조합은 `docs/performance-guide.md`를 따르세요.
+>
+>
+> 여기서는 “빠르게” 띄우는 예시만 제공합니다.
+>
+
+```
+docker-compose up-d
 ```
 
-### 2) Run RDBMS API (Port: 8081)
-```bash
-java -jar itrc-api-rdbms/build/libs/itrc-api-rdbms-0.0.1-SNAPSHOT.jar
+---
+
+### 2) Run APIs (각각 별도 터미널 권장)
+
+### (1) RDBMS API (Port: 8081)
+
+```
+java-jar itrc-api-rdbms/build/libs/itrc-api-rdbms-0.0.1-SNAPSHOT.jar
 ```
 
-### 3) Run Kafka API (Port: 8082)
-```bash
-java -jar itrc-api-kafka/build/libs/itrc-api-kafka-0.0.1-SNAPSHOT.jar
+### (2) Kafka API (Port: 8082)
+
+```
+java-jar itrc-api-kafka/build/libs/itrc-api-kafka-0.0.1-SNAPSHOT.jar
 ```
 
-### 4) k6 Load Test
-> 아래 스크립트는 “RDBMS용 / Kafka용”이 분리되어 있습니다.
-(Seeding/Update/Query를 각각 독립 실행하여, 병목 구간을 더 명확하게 관찰합니다.)
-```bash
-# RDBMS
+### (3) Redis Stream + H3 API (Port: 8083)
+
+```
+java-jar itrc-api-stream/build/libs/itrc-api-stream-0.0.1-SNAPSHOT.jar
+```
+
+---
+
+### 3) k6 Load Test
+
+> 스크립트는 “비교군별”로 분리되어 있습니다.
+>
+>
+> (Seeding/Update/Query를 각각 독립 실행하여 병목 구간을 더 명확하게 관찰합니다.)
+>
+
+```
+# RDBMS (8081)
 k6 run performance-test/seeding01.js
 k6 run performance-test/update01.js
 k6 run performance-test/query01.js
 
-# Kafka
+# Kafka (8082)
 k6 run performance-test/seeding02.js
 k6 run performance-test/update02.js
 k6 run performance-test/query02.js
+
+# Redis Stream + H3 (8083)
+k6 run performance-test/seeding03.js
+k6 run performance-test/update03.js
+k6 run performance-test/query03.js
 ```
 
-</br> 
+---
 
-## 📊 Monitoring & Results
+</br>
+
+##  Monitoring & Results
 
 - **Grafana**: `http://localhost:3000` (ID: `admin` / PW: `password`)
 - **k6 HTML reports**: `docs/results/report_*.html`
 
-### 컨테이너 이름(기본)
-- **DB**: `lbs-research-db`
+### 컨테이너 이름(기본 예시)
+
+- **DB(PostGIS)**: `lbs-research-db`
 - **Kafka**: `lbs-research-kafka`
 - **Redis**: `lbs-research-redis`
+- **Redis(Stream 전용, 권장)**: `lbs-research-redis-stream`
 - **Prometheus**: `lbs-research-prometheus`
 - **Grafana**: `lbs-research-grafana`
+
+> 컨테이너 이름은 docker-compose.yml의 `container_name:` 설정에 따라 달라질 수 있습니다.
+>
