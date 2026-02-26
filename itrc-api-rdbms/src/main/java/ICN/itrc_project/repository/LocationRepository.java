@@ -9,8 +9,10 @@ import java.util.List;
 
 public interface LocationRepository extends JpaRepository<LocationEntity, Long> {
 
-    // 1️⃣ Range Query (반경 검색)
-    // 특정 지점(lng, lat) 반경 radius 미터(m) 내의 데이터 검색
+    /**
+     * [Range Query] 반경 내 개체 검색
+     * geography 캐스팅을 통해 미터(m) 단위의 정밀한 거리 연산 수행
+     */
     @Query(value = """
             SELECT * FROM location_data
             WHERE ST_DWithin(
@@ -21,7 +23,10 @@ public interface LocationRepository extends JpaRepository<LocationEntity, Long> 
             """, nativeQuery = true)
     List<LocationEntity> findByRadius(@Param("lat") double lat, @Param("lng") double lng, @Param("radius") double radiusMeter);
 
-    // 2️⃣ KNN (K-Nearest Neighbors, 최근접 이웃)
+    /**
+     * [KNN Search] 최근접 k개 개체 검색
+     * <-> 연산자를 활용하여 GIST 인덱스 기반의 고속 거리 정렬 수행(geography 기준)
+     */
     @Query(value = """
             SELECT * FROM location_data
             ORDER BY location::geography <-> ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
@@ -29,7 +34,10 @@ public interface LocationRepository extends JpaRepository<LocationEntity, Long> 
             """, nativeQuery = true)
     List<LocationEntity> findNearest(@Param("lat") double lat, @Param("lng") double lng, @Param("k") int k);
 
-    // 3️⃣ PIP (Point In Polygon, 구역 필터링)
+    /**
+     * [PIP Search] 특정 영역(Polygon) 내 개체 필터링
+     * WKT(Well-Known Text) 기반 폴리곤 내 지점 포함 여부 판별
+     */
     @Query(value = """
             SELECT * FROM location_data
             WHERE ST_Contains(
