@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Kafka Ingestion Controller: 고빈도 위치 데이터 수집을 위한 스트리밍 진입점
- * CQRS 패턴의 Command(Write) 영역을 담당하여 수집과 처리를 분리
+ * Kafka Ingestion Controller: 고빈도 위치 데이터 수집을 위한 비동기 스트리밍 진입점
+ * CQRS(Command Query Responsibility Segregation) 패턴의 Write(Command) 영역 담당
  */
 @Slf4j
 @RestController
@@ -30,12 +30,12 @@ public class KafkaLocationController {
     public ResponseEntity<String> streamLocation(@Valid @RequestBody LocationRequest request) {
         log.info(">>> [💌 위치 정보 수신] 유저(trj):{}", request.getUserId());
 
-        // 1. 비동기 메시지 발행: 처리 로직을 Consumer 레이어로 위임하여 응답 지연 최소화
+        // 1. Kafka Producer 발행: 무거운 처리 로직을 Consumer 레이어로 격리하여 스레드 점유 최소화
         locationProducer.sendLocation(request);
 
         /**
          * 2. HTTP 202 Accepted 반환
-         * 요청이 수락되었으나 최종 처리는 비동기적으로 수행됨을 클라이언트에 명시
+         * 요청 수락과 실제 처리 완료 시점을 분리하여 클라이언트의 Blocking Time 최적화
          */
         return ResponseEntity.accepted().body("위치 정보가 Kafka로 전달되었습니다.");
     }
