@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/redis") // API 경로 통합 관리
+@RequestMapping("/api/v1/redis")
 public class LocationController {
 
     private final RedisSearchService searchService;
