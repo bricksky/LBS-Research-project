@@ -24,7 +24,7 @@ public class RedisSearchService {
         this.h3 = H3Core.newInstance();
     }
 
-    // 1. 반경 검색 (Range Query)
+    // 1. 반경 검색: @location:[경도 위도 반경 단위] 순서 엄격 준수
     public List<LocationResponse> searchByRange(LocationRequest center, double radiusKm) {
         log.info("Redis Range Search Start - Radius: {}km", radiusKm);
 
@@ -35,7 +35,7 @@ public class RedisSearchService {
         return executeSearch(new Query(queryStr));
     }
 
-    // 2. 최근접 K명 검색 (KNN Query)
+    // 2. KNN 검색: 특정 범위(50km) 내 필터링 후 거리순 정렬하여 K명 추출
     public List<LocationResponse> searchByKnn(LocationRequest center, int k) {
         log.info("Redis KNN Search Start - K: {}", k);
 
@@ -48,7 +48,7 @@ public class RedisSearchService {
         return executeSearch(query);
     }
 
-    // 3. H3 인덱스 기반 구역 검색 (PIP 최적화)
+    // 3. H3 구역 검색: 해상도 9 기반 PIP(Point-In-Polygon) 최적화 조회
     public List<LocationResponse> searchByH3(LocationRequest center) {
         log.info("Redis H3 Search Start");
 
