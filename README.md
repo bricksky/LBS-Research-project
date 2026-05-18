@@ -212,4 +212,29 @@ k6 run performance-test/query03.js
 - **Grafana**: `lbs-research-grafana`
 
 > 컨테이너 이름은 docker-compose.yml의 `container_name:` 설정에 따라 달라질 수 있습니다.
->
+
+
+<img width="893" height="502" alt="image" src="https://github.com/user-attachments/assets/979d0064-8a9f-4555-921d-4d9f0d102a96" />
+<img width="897" height="502" alt="image" src="https://github.com/user-attachments/assets/a079de28-2920-4300-b690-746fd8bdfe15" />
+<img width="896" height="500" alt="image" src="https://github.com/user-attachments/assets/6bd77403-7c17-4593-a168-a19e683e670d" />
+<img width="892" height="496" alt="image" src="https://github.com/user-attachments/assets/64ea99a7-8b76-40e6-9575-b85cc46df50f" />
+<img width="898" height="499" alt="image" src="https://github.com/user-attachments/assets/6ed183b6-4cd7-4796-b31a-61aa6deb3332" />
+<img width="892" height="499" alt="image" src="https://github.com/user-attachments/assets/bbbe76ec-020f-42f7-be8f-ceb265412776" />
+<img width="894" height="503" alt="image" src="https://github.com/user-attachments/assets/846b1855-678c-4fb7-84fe-5d3ae6292e97" />
+<img width="892" height="504" alt="image" src="https://github.com/user-attachments/assets/9e23bbd7-0c3c-41e7-ad76-54bdebf4a1c8" />
+<img width="894" height="499" alt="image" src="https://github.com/user-attachments/assets/2d03652d-d3ff-400d-8725-a4d367464cac" />
+<img width="894" height="501" alt="image" src="https://github.com/user-attachments/assets/4ec1ccd3-9cb6-499e-b5c5-1ac6b3ae1cd8" />
+<img width="894" height="500" alt="image" src="https://github.com/user-attachments/assets/58340bea-560a-4c02-91c1-b49ea9e72c77" />
+<img width="892" height="497" alt="image" src="https://github.com/user-attachments/assets/495106d2-aee6-4e7e-b511-b9373eb68cd3" />
+<img width="894" height="501" alt="image" src="https://github.com/user-attachments/assets/5061bada-bcdf-4a0f-9ae7-18b5904f4b14" />
+<img width="893" height="498" alt="image" src="https://github.com/user-attachments/assets/11fcc1fa-97ef-45e0-91dc-091d632e5668" />
+<img width="894" height="501" alt="image" src="https://github.com/user-attachments/assets/4ff1c79e-7ff3-44a9-8935-8bbd714ef6e1" />
+
+
+
+
+
+
+
+
+
